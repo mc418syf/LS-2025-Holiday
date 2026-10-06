@@ -228,14 +228,85 @@ with open(os.path.join(HERE, 'launches.csv'), newline='') as f:
                              match=m['p'] if m else None, v=m['v'] if m else None,
                              u=m['u'] if m else None, ke=m['ke'] if m else None))
 
+
+# ---------------- Optional: Klaviyo campaigns + GA4 daily channel revenue ----------------
+# Drop exports at raw/klaviyo_campaigns.csv and raw/ga4/channel_daily.csv and rebuild;
+# the calendar day pop-up lists them. Column names are matched loosely.
+def pick(row, *names):
+    low = {k.strip().lower(): v for k, v in row.items() if k}
+    for n in names:
+        if n in low and str(low[n]).strip() != '':
+            return low[n]
+    return None
+
+
+def to_date(v):
+    from datetime import datetime
+    if not v:
+        return None
+    v = str(v).strip()
+    for fmt in ('%Y-%m-%d %H:%M:%S', '%Y-%m-%d %H:%M', '%Y-%m-%dT%H:%M:%S', '%Y-%m-%d', '%Y%m%d',
+                '%m/%d/%Y %H:%M', '%m/%d/%Y %I:%M %p', '%m/%d/%Y', '%b %d, %Y %I:%M %p', '%b %d, %Y'):
+        try:
+            return datetime.strptime(v, fmt).date().isoformat()
+        except ValueError:
+            continue
+    m = re.match(r'(\d{4}-\d{2}-\d{2})', v)
+    return m.group(1) if m else None
+
+
+def rate(v):
+    x = num(v)
+    if x is None:
+        return None
+    return x / 100 if (isinstance(v, str) and '%' in v) or x > 1 else x
+
+
+comms = []
+kp = os.path.join(RAW, 'klaviyo_campaigns.csv')
+if os.path.exists(kp):
+    for r in read_csv(kp):
+        d = to_date(pick(r, 'send time', 'send date', 'sent at', 'date', 'scheduled send time'))
+        if not d or d not in DI:
+            continue
+        comms.append(dict(d=d, name=pick(r, 'campaign name', 'name', 'campaign') or '',
+                          subj=pick(r, 'subject', 'subject line') or '',
+                          seg=pick(r, 'list', 'lists', 'audience', 'included lists', 'segments') or '',
+                          ch=pick(r, 'channel', 'campaign channel', 'message channel') or 'Email',
+                          rcpt=num(pick(r, 'total recipients', 'recipients', 'delivered', 'successful deliveries')),
+                          open=rate(pick(r, 'open rate', 'unique open rate')),
+                          click=rate(pick(r, 'click rate', 'unique click rate')),
+                          rev=num(pick(r, 'revenue', 'placed order value', 'conversion value', 'placed order revenue')),
+                          ord=num(pick(r, 'placed order', 'unique placed order', 'orders', 'conversions')),
+                          t=(pick(r, 'send time') or '')[11:16], clicks=num(pick(r, 'unique clicks')),
+                          aos=num(pick(r, 'unique active on site')), unsub=num(pick(r, 'unsubscribes')),
+                          ))
+comms.sort(key=lambda c: (c['d'], c['t']))
+chan_daily = {}
+cp = os.path.join(RAW, 'ga4', 'channel_daily.csv')
+if os.path.exists(cp):
+    with open(cp, newline='', encoding='utf-8-sig') as f:
+        lines = [l for l in f if not l.startswith('#') and l.strip()]
+    for r in csv.DictReader(lines):
+        d = to_date(pick(r, 'date'))
+        ch = pick(r, 'session default channel group', 'session primary channel group (default channel group)',
+                  'session primary channel group', 'default channel group', 'channel', 'first user primary channel group (default channel group)')
+        if not d or d not in DI or not ch:
+            continue
+        chan_daily.setdefault(d, []).append(dict(ch=ch, rev=num(pick(r, 'total revenue', 'purchase revenue', 'revenue')),
+                                                 sess=num(pick(r, 'sessions')), tx=num(pick(r, 'transactions', 'purchases', 'key events'))))
+
 # ---------------- Calendar markers ----------------
 events = [
     dict(d='2025-10-13', n='Thanksgiving (CA)', k='hol'),
     dict(d='2025-10-31', n='Halloween', k='hol'),
-    dict(d='2025-11-11', n="Singles' Day", k='mkt'),
+    dict(d='2025-11-13', n='Early Black Friday sale (50% off)', k='bf', src='Klaviyo'),
+    dict(d='2025-11-25', n='Black Friday sale, up to 70% off', k='bf', src='Klaviyo'),
     dict(d='2025-11-27', n='US Thanksgiving', k='mkt'),
     dict(d='2025-11-28', n='Black Friday', k='bf'),
     dict(d='2025-12-01', n='Cyber Monday', k='bf'),
+    dict(d='2025-12-02', n='BF sale last chance (ends in 24h)', k='bf', src='Klaviyo'),
+    dict(d='2025-12-24', n='Boxing Week sale live', k='box', src='Klaviyo'),
     dict(d='2025-12-24', n='Christmas Eve', k='hol'),
     dict(d='2025-12-25', n='Christmas Day', k='hol'),
     dict(d='2025-12-26', n='Boxing Day', k='box'),
@@ -249,10 +320,10 @@ periods = [
     dict(n='Christmas & Boxing Week', s='2025-12-24', e='2025-12-31', k='box'),
 ]
 
-out = dict(daily=daily, ads=ads, gsc=gsc, channels=channels, products=products[:300], brands=brands,
+out = dict(comms=comms, chan_daily=chan_daily, daily=daily, ads=ads, gsc=gsc, channels=channels, products=products[:300], brands=brands,
            keypages=keypages, launches=launches, events=events, periods=periods,
            ga_total=dict(rev=1574189.30, tx=8000, users=360925, newu=366398, views=2366985))
 with open(OUT, 'w') as f:
     json.dump(out, f, separators=(',', ':'), ensure_ascii=False)
-print('daily', len(daily), 'launches', len(launches), 'matched', sum(1 for l in launches if l['match']),
+print('comms', len(comms), 'chan_daily days', len(chan_daily), 'daily', len(daily), 'launches', len(launches), 'matched', sum(1 for l in launches if l['match']),
       'products', len(products), 'bytes', os.path.getsize(OUT))

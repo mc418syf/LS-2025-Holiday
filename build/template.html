@@ -83,6 +83,7 @@ td.strong{color:var(--ink);font-weight:600}
 .cell .ev{font-family:'Barlow Condensed';font-size:10px;letter-spacing:.08em;text-transform:uppercase;margin-top:4px;line-height:1.2}
 .cell .ln{font-size:10px;color:var(--ink3);line-height:1.3;margin-top:3px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
 .cell .lc{position:absolute;right:6px;top:6px;font-family:'Barlow Condensed';font-size:10px;letter-spacing:.06em;background:var(--launch);color:#fff;padding:1px 5px;border-radius:2px}
+.cell .em{position:absolute;right:6px;bottom:8px;font-family:'Barlow Condensed';font-size:10px;letter-spacing:.06em;color:var(--ink2);border:1px solid var(--line2);padding:0 4px;border-radius:2px}
 .cell .pb{position:absolute;left:0;right:0;bottom:0;height:4px}
 .legend{display:flex;flex-wrap:wrap;gap:14px;font-size:11px;color:var(--ink3);font-family:'Barlow Condensed';letter-spacing:.1em;text-transform:uppercase;margin:8px 0}
 .legend span{display:flex;align-items:center;gap:6px}
@@ -130,8 +131,25 @@ td.strong{color:var(--ink);font-weight:600}
 .hm{display:grid;grid-template-columns:44px repeat(24,minmax(0,1fr));gap:2px;font-size:10px;font-family:'Barlow Condensed';color:var(--ink3);min-width:640px}
 .hm div{height:22px;display:flex;align-items:center;justify-content:center;border-radius:2px}
 .hm .lab{justify-content:flex-start;letter-spacing:.08em;text-transform:uppercase}
+.ctlbox{background:var(--panel);border:1px solid var(--line);padding:12px 14px;margin-bottom:12px}
+.chipgrp{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;margin-bottom:8px}
+.chipgrp.sep{border-top:1px solid var(--line);padding-top:10px}
+.chipgrp>.gl{font-family:'Barlow Condensed';font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink3);flex:0 0 96px;line-height:1.2}
+.slider{flex:1;max-width:300px;accent-color:var(--cy)}
+.hint{color:var(--ink3);font-size:11.5px}
+.vlab{font-family:'Barlow Condensed';font-size:15px;font-weight:600;letter-spacing:.04em}
+input[type=number]{background:var(--panel2);color:var(--ink);border:1px solid var(--line2);padding:6px 9px;font-family:'Barlow';font-size:13px}
+.badge{display:inline-block;font-family:'Barlow Condensed';font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;background:var(--launch);color:#fff;padding:1px 6px;border-radius:2px}
+.tag{display:inline-block;font-family:'Barlow Condensed';font-size:10px;letter-spacing:.12em;text-transform:uppercase;padding:1px 6px;border:1px solid var(--line2);color:var(--ink3);border-radius:2px;margin-right:4px}
+.pdot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;vertical-align:baseline}
+.muted{color:var(--ink3)}
+tr.hl td{background:color-mix(in oklab,var(--launch) 9%,transparent)}
+td.cur{background:color-mix(in oklab,var(--cy) 22%,transparent)}
+.bindbar{display:flex;height:22px;margin-top:10px;border:1px solid var(--line);overflow:hidden;border-radius:2px}
+.bindbar div{display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed';font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:#fff;white-space:nowrap;overflow:hidden;border-right:2px solid var(--panel)}
+.mdelta{font-size:11px;margin-top:2px}
 .bar{height:8px;background:var(--cy);border-radius:0 4px 4px 0;display:inline-block;vertical-align:middle}
-@media(max-width:1100px){.two,.three{grid-template-columns:1fr}}
+@media(max-width:1100px){.two,.three{grid-template-columns:minmax(0,1fr)}}
 @media(max-width:640px){main{padding:16px}.hbar{padding:10px 16px;flex-wrap:wrap}.hmeta{margin-left:0;text-align:left}nav{padding:0 8px}.cal{gap:2px}.cell{min-height:64px;padding:4px 4px 8px}.cell .ln,.cell .ev,.cell .dd{display:none}.cell .mv{font-size:12px}.cell .lc{font-size:9px;right:2px;top:2px;padding:0 3px}.kpi .v{font-size:21px}}
 </style></head><body>
 <header>
@@ -148,7 +166,6 @@ td.strong{color:var(--ink);font-weight:600}
 <div class="tab" id="t-perf"></div>
 <div class="tab" id="t-ramp"></div>
 <div class="tab" id="t-bfcm"></div>
-<div class="tab" id="t-launch"></div>
 <div class="tab" id="t-chan"></div>
 <div class="tab" id="t-prod"></div>
 <div class="tab" id="t-paid"></div>
@@ -223,7 +240,7 @@ function table(el,cols,rows,opts){opts=opts||{};let sk=opts.sort||null,sd=-1;
  const draw=()=>{let rs=rows.slice();if(sk!=null){const c=cols.find(c=>c.k===sk);rs.sort((a,b)=>{const va=c.v?c.v(a):a[sk],vb=c.v?c.v(b):b[sk];
    if(va==null)return 1;if(vb==null)return -1;return (va>vb?1:va<vb?-1:0)*sd;});}
   el.innerHTML=`<div class="tw" style="${opts.h?'max-height:'+opts.h+'px':''}"><table><thead><tr>${cols.map(c=>`<th class="${c.l?'l':''}" data-k="${c.k}" title="Sort">${c.t}${sk===c.k?(sd<0?' ▾':' ▴'):''}</th>`).join('')}</tr></thead><tbody>${
-   rs.map(r=>`<tr ${opts.click?`data-d="${esc(r[opts.click])}" style="cursor:pointer"`:''}>${cols.map(c=>`<td class="${c.l?'l':''} ${c.cls||''}">${c.f?c.f(r):esc(r[c.k])}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+   rs.map(r=>`<tr class="${opts.rowcls?opts.rowcls(r):''}" ${opts.click?`data-d="${esc(r[opts.click])}" style="cursor:pointer"`:''}>${cols.map(c=>`<td class="${c.l?'l':''} ${c.cls||''}">${c.f?c.f(r):esc(r[c.k])}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
   el.querySelectorAll('th').forEach(th=>th.onclick=()=>{const k=th.dataset.k;if(sk===k)sd=-sd;else{sk=k;sd=-1;}draw();});
   if(opts.click)el.querySelectorAll('tbody tr').forEach(tr=>tr.onclick=()=>opts.onclick(tr.dataset.d));};
  draw();}
@@ -234,39 +251,44 @@ const kpi=(l,v,d)=>`<div class="kpi"><div class="l">${l}</div><div class="v">${v
 function rail(){const s=dl('2025-10-01'),e=dl('2025-12-31'),span=(e-s)/864e5+1;const X=d=>((dl(d)-s)/864e5)/span*100;
  const blks=PAY.periods.map(p=>{const a=agg(rng(p.s,p.e)),b=agg(rng(p.s,p.e),'py_');const w=X(p.e)-X(p.s)+100/span;
   return `<div class="rail-blk" style="left:${X(p.s)}%;width:calc(${w}% - 2px);background:${KC(p.k)};${p.k==='bau'?'color:var(--ink)':''}" title="${esc(p.n)}: ${kk(a.net)} net, ${pc(delta(a.net,b.net),1)} YoY"><div class="nm">${esc(p.n)}</div><div class="dt">${kk(a.net)} · ${dcellTxt(delta(a.net,b.net))}</div></div>`;}).join('');
- const evs=PAY.events.map(e=>`<div class="rail-ev" style="left:${X(e.d)}%;border-color:${KC(e.k)}" title="${esc(e.n)} · ${fd(e.d)}">${['Black Friday','Boxing Day',"Singles' Day",'Thanksgiving (CA)','Halloween'].includes(e.n)?esc(e.n.replace(' (CA)','')):''}</div>`).join('');
+ const evs=PAY.events.map(e=>`<div class="rail-ev" style="left:${X(e.d)}%;border-color:${KC(e.k)}" title="${esc(e.n)} · ${fd(e.d)}">${({'Black Friday':'Black Friday','Thanksgiving (CA)':'Thanksgiving','Halloween':'Halloween','Early Black Friday sale (50% off)':'Early BF sale','Boxing Week sale live':'Boxing Week'})[e.n]||''}</div>`).join('');
  const ax=['2025-10-01','2025-10-15','2025-11-01','2025-11-15','2025-12-01','2025-12-15'].map(d=>`<i style="left:${X(d)}%">${fds(d)}</i>`).join('');
- return `<div class="rail"><div class="rail-h">Q4 trading periods<span class="s">Net sales and same-date YoY per period. Coloured ticks mark retail calendar dates</span></div><div class="rail-body"><div class="rail-track">${blks}${evs}<div class="rail-ax">${ax}</div></div></div></div>`;}
+ return `<div class="rail"><div class="rail-h">Q4 trading periods<span class="s">Net sales and same-date YoY per period. Ticks mark retail dates and sale moments from Klaviyo sends</span></div><div class="rail-body"><div class="rail-track">${blks}${evs}<div class="rail-ax">${ax}</div></div></div></div>`;}
 const dcellTxt=v=>!ok(v)?'—':(v>=0?'+':'')+(v*100).toFixed(0)+'% YoY';
 
 /* ---------- day modal ---------- */
+const CBYD={};(PAY.comms||[]).forEach(c=>(CBYD[c.d]=CBYD[c.d]||[]).push(c));
+const HAS_COMMS=(PAY.comms||[]).length>0, HAS_CHAN=Object.keys(PAY.chan_daily||{}).length>0;
 function openDay(d){const r=DI[d];if(!r)return;const p=periodOf(d);
  $('#mtitle').textContent=fdl(d);
- const L=LBYD[d]||[],E=EBYD[d]||[];
- const mkk=(l,v,dd)=>`<div class="mk"><div class="l">${l}</div><div class="v">${v}</div>${dd||''}</div>`;
- $('#mbody').innerHTML=`<div class="mgrid">
-  ${mkk('Net sales',m0(r.net),dsp(delta(r.net,r.py_net),'vs same date'))}
-  ${mkk('2024 same weekday ('+fds(r.wpyd)+')',m0(r.wpy_net),'<span class="d">2025 is '+dcellTxt(delta(r.net,r.wpy_net)).replace(' YoY','')+'</span>')}
-  ${mkk('Gross sales',m0(r.gross),dsp(delta(r.gross,r.py_gross)))}
-  ${mkk('Sessions',n0(r.sess),dsp(delta(r.sess,r.py_sess)))}
-  ${mkk('Conversion',pc(r.cvr),dsp(delta(r.cvr,r.py_cvr)))}
-  ${mkk('AOV',m2(r.aov),dsp(delta(r.aov,r.py_aov)))}
-  ${mkk('Orders (est.)',n0(r.orders),dsp(delta(r.orders,r.py_orders)))}
-  ${mkk('Returns',m0(r.ret),dspInv(delta(r.ret,r.py_ret)))}
-  ${mkk('Discounts',m0(r.disc),'')}
-  ${mkk('Google Ads spend',m0(r.g_cost),dsp(delta(r.g_cost,r.py_g_cost)))}
-  ${mkk('Google Ads clicks',n0(r.g_clk),dsp(delta(r.g_clk,r.py_g_clk)))}
-  ${mkk('Organic clicks',n0(r.sc_clk),'<span class="d">'+n0(r.sc_imp)+' impr.</span>')}
- </div>
- <div class="blk"><h4>Context</h4><div class="li">Period: <b>${p?esc(p.n):'—'}</b>${E.length?' · Calendar: <b>'+E.map(e=>esc(e.n)).join(', ')+'</b>':''}</div></div>
- <div class="blk"><h4>Launches (${L.length})</h4>${L.length?L.map(l=>`<div class="li"><b>${esc(l.name)}</b><br><span style="color:var(--ink3);font-size:12px">${l.match?`PDP over Q4: ${n0(l.v)} views · ${n0(l.u)} users · ${n0(l.ke)} key events`:'No matching product page in GA4 export'}</span></div>`).join(''):'<div class="li">No launches on the release calendar.</div>'}</div>`;
- $('#mask').classList.add('on');$('#mx').focus();}
+ const L=LBYD[d]||[],E=EBYD[d]||[],C=CBYD[d]||[];
+ const ks=[['Net sales',m0(r.net),delta(r.net,r.py_net)],['Sessions',n0(r.sess),delta(r.sess,r.py_sess)],['CVR',pc(r.cvr),delta(r.cvr,r.py_cvr)],
+  ['Orders (est.)',n0(r.orders),delta(r.orders,r.py_orders)],['AOV',m2(r.aov),delta(r.aov,r.py_aov)],['Gross sales',m0(r.gross),delta(r.gross,r.py_gross)],
+  ['Returns',m0(r.ret),delta(r.ret,r.py_ret),1],['Discounts',m0(r.disc),delta(r.disc,r.py_disc),1],['Google spend',m0(r.g_cost),delta(r.g_cost,r.py_g_cost)],
+  ['MER',r.g_cost?(r.net/r.g_cost).toFixed(1)+'x':'—',r.g_cost&&r.py_g_cost?delta(r.net/r.g_cost,r.py_net/r.py_g_cost):null],
+  ['Google conv.',n0(r.g_conv),delta(r.g_conv,r.py_g_conv)],['Organic clicks',n0(r.sc_clk),null]];
+ const dd=(v,inv)=>v==null||!ok(v)?'':`<div class="mdelta ${(inv?v<=0:v>=0)?'up':'down'}">${v>=0?'▲':'▼'} ${(Math.abs(v)*100).toFixed(0)}%</div>`;
+ let h=`<div class="mgrid">${ks.map(([l,v,x,inv])=>`<div class="mk"><div class="l">${l}</div><div class="v">${v}</div>${dd(x,inv)}</div>`).join('')}</div>
+ <div class="src" style="margin:-8px 0 10px">Changes are against the same date in 2024 (${m0(r.py_net)} net). Same weekday last year (${fd(r.wpyd)}): ${m0(r.wpy_net)} net, ${dcellTxt(delta(r.net,r.wpy_net)).replace(' YoY','')}.</div>`;
+ h+=`<div class="blk"><h4>Trading period</h4><div class="li"><span class="pdot" style="background:${KC(p.k)}"></span><b>${esc(p.n)}</b> <span class="muted">${fds(p.s)} – ${fds(p.e)}</span></div>${E.map(e=>`<div class="li" style="border-left:3px solid ${KC(e.k)};padding-left:9px"><b>Key date</b> · ${esc(e.n)}</div>`).join('')}</div>`;
+ h+=`<div class="blk"><h4>Launches (${L.length})</h4>${L.length?L.map(l=>`<div class="li"><span class="badge">Launch</span> <b>${esc(l.name)}</b><br><span class="muted" style="font-size:12px">${l.match?`PDP over Q4: ${n0(l.v)} views · ${n0(l.u)} users · ${n0(l.ke)} key events`:'No matching product page in the GA4 export'}</span></div>`).join(''):'<div class="li">No launches on the release calendar</div>'}</div>`;
+ const em=C.filter(c=>!/sms/i.test(c.ch)),sm=C.filter(c=>/sms/i.test(c.ch));
+ h+=`<div class="blk"><h4>Klaviyo email campaigns sent (${HAS_COMMS?em.length:'—'})</h4>`+(!HAS_COMMS?'<div class="li muted">Not in the uploaded files. Add a Klaviyo campaign export as <code>raw/klaviyo_campaigns.csv</code> and rebuild to list each send here.</div>':
+  em.length?em.map(c=>`<div class="li"><span class="tag">Email</span><b>${esc(c.subj||c.name)}</b> <span class="muted">${esc(c.t)}</span><br><span class="muted" style="font-size:12px">${esc(c.name)}</span><br><span class="muted" style="font-size:12px">${n0(c.rcpt)} recipients · open ${pc(c.open,1)} · click ${pc(c.click,2)} (${n0(c.clicks)} unique) · ${n0(c.aos)} active on site · ${n0(c.unsub)} unsubs${ok(c.rev)?' · '+m0(c.rev)+' attributed revenue':''}${c.seg?' · list: '+esc(c.seg):''}</span></div>`).join('')+(em.some(c=>ok(c.rev))?'':'<div class="src">The Klaviyo export has no revenue column, so attributed revenue is not shown.</div>'):'<div class="li">No email campaign sent this day</div>')+`</div>`;
+ if(sm.length)h+=`<div class="blk"><h4>Klaviyo SMS campaigns sent (${sm.length})</h4>`+sm.map(c=>`<div class="li"><span class="tag">SMS</span><b>${esc(c.name)}</b><br><span class="muted" style="font-size:12px">${n0(c.rcpt)} delivered · click ${pc(c.click,2)} · ${m0(c.rev)} revenue</span></div>`).join('')+`</div>`;
+ const ch=((PAY.chan_daily||{})[d]||[]).filter(x=>(x.rev||0)>0||(x.sess||0)>0).sort((a,b)=>(b.rev||0)-(a.rev||0));
+ h+=`<div class="blk"><h4>Channel revenue that day</h4>`+(!HAS_CHAN?'<div class="li muted">The GA4 channel export in the uploads is a quarter total, not daily. Add a GA4 report with Date × Session default channel group (sessions, total revenue, transactions) as <code>raw/ga4/channel_daily.csv</code> and rebuild.</div>':
+  `<div class="tw" style="max-height:none"><table><thead><tr><th class="l">Channel</th><th>Revenue</th><th>Share</th><th>Sessions</th><th>Transactions</th><th>CVR</th></tr></thead><tbody>${(()=>{const t=ch.reduce((a,x)=>a+(x.rev||0),0);
+   return ch.map(x=>`<tr><td class="l strong">${esc(x.ch)}</td><td>${m0(x.rev)}</td><td>${pc(t?x.rev/t:null,1)}</td><td>${n0(x.sess)}</td><td>${n0(x.tx)}</td><td>${x.sess?pc(x.tx/x.sess):'—'}</td></tr>`).join('');})()}</tbody></table></div>`)+`</div>`;
+ h+=`<div class="blk"><h4>Search that day</h4><div class="li">Google Ads: <b>${m0(r.g_cost)}</b> spend · ${n0(r.g_clk)} clicks · ${ok(r.g_conv)?r.g_conv.toFixed(1):'—'} conversions · ${r.g_conv?m2(r.g_cost/r.g_conv):'—'} per conversion</div>
+  <div class="li">Organic (Search Console): <b>${n0(r.sc_clk)}</b> clicks · ${n0(r.sc_imp)} impressions · CTR ${pc(r.sc_ctr,1)} · avg position ${ok(r.sc_pos)?r.sc_pos.toFixed(1):'—'}</div></div>`;
+ $('#mbody').innerHTML=h;$('#mask').classList.add('on');$('#mx').focus();}
 $('#mx').onclick=()=>$('#mask').classList.remove('on');
 $('#mask').onclick=e=>{if(e.target.id==='mask')$('#mask').classList.remove('on');};
 document.addEventListener('keydown',e=>{if(e.key==='Escape')$('#mask').classList.remove('on');});
 
 /* ================= TABS ================= */
-const TABS=[['ov','Overview'],['cal','Calendar'],['perf','Performance'],['ramp','Rhythm & ramp'],['bfcm','BFCM'],['launch','Launches'],
+const TABS=[['ov','Overview'],['cal','Calendar'],['perf','Performance'],['ramp','Rhythm & ramp'],['bfcm','BFCM'],
  ['chan','Channels'],['prod','Products & brands'],['paid','Paid search'],['seo','Organic search'],['notes','Sources & notes']];
 const RENDERED=new Set();let cur='ov';
 const nav=$('#nav');TABS.forEach(([id,lab])=>{const b=document.createElement('button');b.textContent=lab;b.dataset.t=id;b.onclick=()=>show(id);nav.appendChild(b);});
@@ -319,12 +341,12 @@ RENDER.cal=()=>{const mx=Math.max(...D.map(r=>r.net));
  const months=[['2025-10','October 2025'],['2025-11','November 2025'],['2025-12','December 2025']];
  const heat=v=>{const t=Math.max(0,Math.min(1,v/mx));return `color-mix(in oklab, ${css('--heat0')}, ${css(t<.5?'--heat1':'--heat2')} ${Math.round((t<.5?t*2:(t-.5)*2)*100)}%)`;};
  let h=rail()+`<div class="sec"><div class="sech"><h2>92-day calendar</h2><span class="sub">Net sales and same-date YoY per day. Click any day for the full detail</span></div>
- <div class="legend"><span><i class="sw" style="background:var(--launch)"></i>Launch count</span>${PAY.periods.map(p=>`<span><i class="sw" style="background:${KC(p.k)}"></i>${esc(p.n)}</span>`).join('')}<span>Top bar: net sales intensity</span></div>`;
+ <div class="legend"><span><i class="sw" style="background:var(--launch)"></i>Launch count</span><span>✉ Klaviyo emails sent</span>${PAY.periods.map(p=>`<span><i class="sw" style="background:${KC(p.k)}"></i>${esc(p.n)}</span>`).join('')}<span>Top bar: net sales intensity</span></div>`;
  months.forEach(([ym,lab])=>{h+=`<div class="cal-mon">${lab}</div><div class="cal">${['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(x=>`<div class="dow">${x}</div>`).join('')}`;
   const first=dl(ym+'-01');for(let i=0;i<first.getDay();i++)h+='<div class="cell empty"></div>';
   D.filter(r=>r.d.startsWith(ym)).forEach(r=>{const L=LBYD[r.d]||[],E=EBYD[r.d]||[],p=periodOf(r.d),dd=delta(r.net,r.py_net);
    h+=`<button class="cell" data-d="${r.d}" aria-label="${fdl(r.d)}: net sales ${m0(r.net)}"><div class="heat" style="background:${heat(r.net)}"></div>
-   <div class="dn">${dl(r.d).getDate()}</div>${L.length?`<div class="lc">${L.length} drop${L.length>1?'s':''}</div>`:''}
+   <div class="dn">${dl(r.d).getDate()}</div>${L.length?`<div class="lc">${L.length} drop${L.length>1?'s':''}</div>`:''}${(CBYD[r.d]||[]).length?`<div class="em" title="${(CBYD[r.d]||[]).length} Klaviyo email(s)">✉ ${(CBYD[r.d]||[]).length}</div>`:''}
    <div class="mv">${kk(r.net)}</div><div class="dd">${dcell(dd)}</div>
    ${E.length?`<div class="ev" style="color:${KC(E[0].k)}">${E.map(e=>esc(e.n)).join(' · ')}</div>`:''}
    ${L.length?`<div class="ln">${L.map(l=>esc(l.name)).join(' · ')}</div>`:''}
@@ -408,29 +430,6 @@ RENDER.bfcm=()=>{const bf=DI['2025-11-28'];const run=rng('2025-11-21','2025-12-0
   {k:'sess',t:'Sessions',f:r=>n0(r.sess)},{k:'cvr',t:'CVR',f:r=>pc(r.cvr)},{k:'aov',t:'AOV',f:r=>m2(r.aov)},{k:'g_cost',t:'Ads spend',f:r=>m0(r.g_cost)},
   {k:'l',t:'Launches',l:1,cls:'wrap',f:r=>(LBYD[r.d]||[]).map(l=>esc(l.name)).join(' · ')||'—'}],run,{click:'d',onclick:openDay});};
 
-/* ---- Launches ---- */
-RENDER.launch=()=>{const L=PAY.launches.map(l=>{const r=DI[l.d];return Object.assign({},l,{net:r.net,py:r.py_net,dn:delta(r.net,r.py_net),n:(LBYD[l.d]||[]).length,ker:l.v?l.ke/l.v:null});});
- const ld=new Set(PAY.launches.map(l=>l.d));const on=D.filter(r=>ld.has(r.d)),off=D.filter(r=>!ld.has(r.d));
- const ao=agg(on),af=agg(off),bo=agg(on,'py_'),bf=agg(off,'py_');
- const byB={};L.forEach(l=>{const b=byB[l.b]=byB[l.b]||{b:l.b,n:0,v:0,ke:0};b.n++;b.v+=l.v||0;b.ke+=l.ke||0;});
- const bl=Object.values(byB).sort((a,b)=>b.n-a.n);
- const top=L.filter(l=>ok(l.ke)).sort((a,b)=>b.ke-a.ke).slice(0,15);
- $('#t-launch').innerHTML=`<div class="sec"><div class="sech"><h2>Release calendar</h2><span class="sub">${L.length} launches across ${ld.size} days, matched to GA4 product page data</span></div>
- <div class="kpis">${kpi('Launch days',ld.size,'<span class="d">of 92 days</span>')}${kpi('Avg net, launch day',kk(ao.net/on.length),dsp(delta(ao.net/on.length,bo.net/on.length),'vs same date'))}
- ${kpi('Avg net, other days',kk(af.net/off.length),dsp(delta(af.net/off.length,bf.net/off.length),'vs same date'))}${kpi('Launch-day lift',pc((ao.net/on.length)/(af.net/off.length)-1,0),'<span class="d">avg launch day vs other days</span>')}
- ${kpi('CVR launch days',pc(ao.cvr),'<span class="d">other days '+pc(af.cvr)+'</span>')}${kpi('Share of Q4 net',pc(ao.net/agg(D).net,1),'<span class="d">from '+ld.size+' launch days</span>')}</div></div>
- <div class="two"><div class="sec"><div class="sech"><h2>Highest-engagement launches</h2><span class="sub">GA4 key events on the product page, whole quarter</span></div><div class="panel"><div class="chartbox" style="height:440px"><canvas id="c-lk"></canvas></div></div></div>
- <div class="sec"><div class="sech"><h2>Launches by brand</h2><span class="sub">Count of releases on the calendar</span></div><div class="panel"><div class="chartbox" style="height:440px"><canvas id="c-lb"></canvas></div></div></div></div>
- <div class="note">Key events in GA4 track high-intent actions on a page, such as add to cart or raffle entry. The Jordan and Vans × Gallery Dept. drops show 1,400–2,100 key events on 2.4–4.2k views, a 38–85% key event rate. Most general releases sit at 5–15%. These are the products that can carry a trading day on their own.</div>
- <div class="sec"><div class="sech"><h2>Every launch</h2><span class="sub">Search and sort. Click a row to open the day</span></div>
- <div class="ctl"><input type="text" id="lq" placeholder="Search launches or brands" style="min-width:260px"></div><div id="l-t"></div></div>`;
- mk('c-lk',{type:'bar',data:{labels:top.map(l=>l.name.length>38?l.name.slice(0,36)+'…':l.name),datasets:[{label:'Key events',data:top.map(l=>l.ke),backgroundColor:css('--cy')}]},options:barOpts('num',true)});
- mk('c-lb',{type:'bar',data:{labels:bl.map(b=>b.b),datasets:[{label:'Launches',data:bl.map(b=>b.n),backgroundColor:css('--cy')}]},options:barOpts('num',true)});
- const cols=[{k:'d',t:'Date',l:1,cls:'strong',f:r=>fd(r.d)},{k:'name',t:'Launch',l:1,cls:'wrap',f:r=>esc(r.name)},{k:'b',t:'Brand',l:1},{k:'v',t:'PDP views',f:r=>n0(r.v)},{k:'u',t:'Users',f:r=>n0(r.u)},
-  {k:'ke',t:'Key events',f:r=>n0(r.ke)},{k:'ker',t:'KE / view',f:r=>pc(r.ker,1)},{k:'net',t:'Day net sales',f:r=>m0(r.net)},{k:'dn',t:'Day Δ YoY',f:r=>dcell(r.dn)},{k:'n',t:'Drops that day'}];
- const draw=q=>table($('#l-t'),cols,L.filter(l=>!q||(l.name+' '+l.b).toLowerCase().includes(q)),{click:'d',onclick:openDay,h:560});
- draw('');$('#lq').oninput=e=>draw(e.target.value.toLowerCase().trim());};
-
 /* ---- Channels ---- */
 RENDER.chan=()=>{const C=PAY.channels.filter(c=>c.rev>0||c.users>100);const tot=PAY.channels.reduce((a,c)=>a+(c.rev||0),0);
  $('#t-chan').innerHTML=`<div class="sec"><div class="sech"><h2>Channel contribution</h2><span class="sub">GA4 · first-user primary channel group · 1 Oct – 31 Dec 2025</span></div>
@@ -465,9 +464,9 @@ RENDER.prod=()=>{const B=PAY.brands.slice(0,15),P=PAY.products;
  draw();$('#pq').oninput=draw;$('#pb').onchange=draw;};
 
 /* ---- Paid search ---- */
-RENDER.paid=()=>{const A=PAY.ads;const gc=sum(D,'g_cost'),pgc=sum(D,'py_g_cost'),gk=sum(D,'g_clk'),pgk=sum(D,'py_g_clk'),gv=sum(D,'g_conv'),pgv=sum(D,'py_g_conv');
+function renderPaidPerf(){const A=PAY.ads;const gc=sum(D,'g_cost'),pgc=sum(D,'py_g_cost'),gk=sum(D,'g_clk'),pgk=sum(D,'py_g_clk'),gv=sum(D,'g_conv'),pgv=sum(D,'py_g_conv');
  const net=agg(D).net,pnet=agg(D,'py_').net;
- $('#t-paid').innerHTML=rail()+`<div class="sec"><div class="sech"><h2>Google Ads · 1 Oct – 31 Dec</h2><span class="sub">Versus prior year, weekday-aligned by Google Ads</span></div>
+ $('#paid-body').innerHTML=`<div class="sec"><div class="sech"><h2>Google Ads · 1 Oct – 31 Dec</h2><span class="sub">Versus prior year, weekday-aligned by Google Ads</span></div>
  <div class="kpis">${kpi('Spend',kk(gc),dsp(delta(gc,pgc)))}${kpi('Clicks',n0(gk),dsp(delta(gk,pgk)))}${kpi('Conversions',n0(gv),dsp(delta(gv,pgv)))}
  ${kpi('Cost / click',m2(gc/gk),dspInv(delta(gc/gk,pgc/pgk)))}${kpi('Cost / conv.',m2(gc/gv),dspInv(delta(gc/gv,pgc/pgv)))}
  ${kpi('Spend as % of net',pc(gc/net,2),'<span class="d">2024: '+pc(pgc/pnet,2)+'</span>')}${kpi('MER (net ÷ spend)',(net/gc).toFixed(1)+'x','<span class="d">2024: '+(pnet/pgc).toFixed(1)+'x</span>')}</div></div>
@@ -497,6 +496,11 @@ RENDER.paid=()=>{const A=PAY.ads;const gc=sum(D,'g_cost'),pgc=sum(D,'py_g_cost')
  mk('g-age',{type:'bar',data:{labels:A.age.map(a=>a.k),datasets:[{label:'2025',data:A.age.map(a=>a.imp),backgroundColor:css('--cy')},{label:'2024',data:A.age.map(a=>a.py_imp),backgroundColor:css('--py')}]},options:barOpts('num')});
  mk('g-gen',{type:'bar',data:{labels:A.gender.map(a=>a.k),datasets:[{label:'2025',data:A.gender.map(a=>a.imp),backgroundColor:css('--cy')},{label:'2024',data:A.gender.map(a=>a.py_imp),backgroundColor:css('--py')}]},options:barOpts('num',true)});};
 
+let paidView='scen';
+RENDER.paid=()=>{$('#t-paid').innerHTML=rail()+`<div class="ctl" id="paid-sw"><span class="gl">Section</span><button class="chip ${paidView==='scen'?'on':''}" data-v="scen">Paid scenarios</button><button class="chip ${paidView==='perf'?'on':''}" data-v="perf">Google Ads performance</button></div><div id="paid-body"></div>`;
+ const go=()=>{Object.keys(CH).filter(k=>/^(sc|c-g|g-)/.test(k)).forEach(k=>{CH[k].destroy();delete CH[k];});paidView==='scen'?renderScenarios($('#paid-body')):renderPaidPerf();};
+ $('#paid-sw').onclick=e=>{const v=e.target.dataset.v;if(!v)return;paidView=v;$('#paid-sw').querySelectorAll('.chip').forEach(c=>c.classList.toggle('on',c.dataset.v===v));go();};go();};
+/*__SCENARIOS__*/
 /* ---- Organic search ---- */
 RENDER.seo=()=>{const G=PAY.gsc,ck=sum(D,'sc_clk'),im=sum(D,'sc_imp');
  const brand=G.queries.filter(q=>/livestock|deadstock|live stock|dead stock/.test(q.k)).reduce((a,q)=>a+q.clk,0),topc=G.queries.reduce((a,q)=>a+q.clk,0);
@@ -521,9 +525,10 @@ RENDER.notes=()=>{$('#t-notes').innerHTML=`<div class="sec"><div class="sech"><h
  <div><h4>Google Search Console</h4><p>Web search performance for deadstock.ca: daily clicks, impressions, CTR and position, plus queries, pages, countries, devices and search appearance. The export has no prior-year comparison.</p></div>
  <div><h4>GA4</h4><p>User acquisition by first-user channel (users, key events, revenue, transactions) and pages and screens by title (views, users, key events). GA4 revenue (${kk(PAY.ga_total.rev)}) is gross and differs from Shopify net sales by design.</p></div>
  <div><h4>Release calendar</h4><p>${PAY.launches.length} launches transcribed from the launch calendar screenshots. Each launch is matched to its GA4 product page by name, and ${PAY.launches.filter(l=>l.match).length} matched. Lines truncated in the screenshot (e.g. "Show all (4)" on 10 Oct) may be incomplete.</p></div>
+ <div><h4>Klaviyo campaigns</h4><p>${(PAY.comms||[]).length} email campaigns sent 1 Oct – 31 Dec 2025: recipients, open and click rates, active on site, unsubscribes. The export has no revenue column. Sale dates on the timeline (early Black Friday 13 Nov, 70% off 25 Nov, last chance 2 Dec, Boxing Week 24 Dec) come from these sends.</p></div>
  <div><h4>Brand performance report</h4><p>The YouTube/Display brand performance export contained no data (all nulls), so it is not charted.</p></div></div></div>
  <div class="sec"><div class="sech"><h2>Caveats</h2></div>
- <div class="note">Trading periods are analytical windows, not Livestock's promo calendar, which was not in the source files. Add the actual promo dates (sale start and end, early-access windows, email and SMS sends) to <code>build/build_data.py</code> to see them on the rail and calendar. The same-date YoY puts Black Friday 2025 (28 Nov) against US Thanksgiving 2024. Use the "same weekday" comparison on the Performance tab, or the BFCM tab, for event-aligned reads.</div></div>`;};
+ <div class="note">Trading periods are analytical windows. Sale moments on the timeline are inferred from Klaviyo send dates and subject lines, not from a promo calendar. Edit <code>periods</code> and <code>events</code> in <code>build/build_data.py</code> to change them. The same-date YoY puts Black Friday 2025 (28 Nov) against US Thanksgiving 2024. Use the "same weekday" comparison on the Performance tab, or the BFCM tab, for event-aligned reads.</div></div>`;};
 
 /* ---------- boot ---------- */
 const h0=(location.hash||'').slice(1);show(TABS.some(t=>t[0]===h0)?h0:'ov');
