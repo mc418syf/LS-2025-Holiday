@@ -320,6 +320,15 @@ periods = [
     dict(n='Holiday gifting', s='2025-12-02', e='2025-12-23', k='gift'),
     dict(n='Christmas & Boxing Week', s='2025-12-24', e='2025-12-31', k='box'),
 ]
+# Shopify channel performance (whole quarter, last click by referring platform)
+shop_ch = []
+sp = os.path.join(RAW, 'shopify_channel_performance.csv')
+if os.path.exists(sp):
+    for r in read_csv(sp):
+        shop_ch.append(dict(plat=r['Referring platform'], ch=r['Channel'], type=r['Type'], sess=num(r['Sessions']) or 0,
+                            sales=num(r['Sales']) or 0, ord=num(r['Orders']) or 0,
+                            newo=num(r['Orders from new customers']) or 0, reto=num(r['Orders from returning customers']) or 0))
+
 # Markdown windows inferred from Klaviyo send dates and subject lines (no promo calendar was supplied)
 sales = [
     dict(n='Black Friday sale', s='2025-11-13', e='2025-12-03', k='bf',
@@ -328,7 +337,7 @@ sales = [
          src='Klaviyo: "Boxing Week is Here!" (24 Dec), "Boxing Week Continues!" (29 Dec). End date not stated; runs to the end of the data'),
 ]
 
-out = dict(sales=sales, comms=comms, chan_daily=chan_daily, daily=daily, ads=ads, gsc=gsc, channels=channels, products=products[:300], brands=brands,
+out = dict(shop_ch=shop_ch, sales=sales, comms=comms, chan_daily=chan_daily, daily=daily, ads=ads, gsc=gsc, channels=channels, products=products[:300], brands=brands,
            keypages=keypages, launches=launches, events=events, periods=periods,
            ga_total=dict(rev=1574189.30, tx=8000, users=360925, newu=366398, views=2366985))
 with open(OUT, 'w') as f:

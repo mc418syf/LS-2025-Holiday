@@ -281,7 +281,24 @@ const CBYD={};(PAY.comms||[]).forEach(c=>(CBYD[c.d]=CBYD[c.d]||[]).push(c));
 const CH_ORDER=(()=>{const t={};Object.values(PAY.chan_daily||{}).forEach(rs=>rs.forEach(x=>t[x.ch]=(t[x.ch]||0)+(x.rev||0)));return Object.keys(t).sort((a,b)=>t[b]-t[a]);})();
 const CH_TOP=CH_ORDER.slice(0,7);
 const chColor=c=>{const i=CH_TOP.indexOf(c);return i<0?css('--py'):css('--s'+(i+1));};
-const RPT=(()=>{const o={};let r=0,t=0;PAY.channels.forEach(c=>{if(c.tx>=20){o[c.ch]=c.rev/c.tx;}r+=c.rev||0;t+=c.tx||0;});o._all=r/t;return o;})();
+const GROUPS=['Paid search & Shopping (Google)','Organic search','Direct','Email (Klaviyo)','Meta','Other'];
+const GA_GRP={'Paid Search':0,'Paid Shopping':0,'Cross-network':0,'Organic Search':1,'Organic Shopping':1,'Direct':2,'Email':3,'SMS':3,'Mobile Push Notifications':3,'Paid Social':4,'Organic Social':4};
+const gaGroup=c=>GROUPS[GA_GRP[c]??5];
+const SE=/^(alphabet|microsoft|duckduckgo|yahoo!|brave|ecosia|msn|naver|goodsearch)$/;
+const shGroup=x=>x.plat==='direct'?GROUPS[2]:x.plat==='klaviyo'?GROUPS[3]:x.plat==='meta'?GROUPS[4]:(x.plat==='alphabet'&&x.ch==='google'&&x.type==='paid')||(x.plat==='alphabet'&&x.ch==='gmail'&&x.type==='paid')?GROUPS[0]:SE.test(x.plat)&&x.type==='organic'&&x.ch!=='gmail'?GROUPS[1]:GROUPS[5];
+const SHG=(()=>{const o={};GROUPS.forEach(g=>o[g]={g,sess:0,sales:0,ord:0,newo:0,reto:0,n:0});(PAY.shop_ch||[]).forEach(x=>{const t=o[shGroup(x)];t.sess+=x.sess;t.sales+=x.sales;t.ord+=x.ord;t.newo+=x.newo;t.reto+=x.reto;t.n++;});return o;})();
+const HAS_SHOPCH=(PAY.shop_ch||[]).length>0;
+// calibration: scale each group's GA4 revenue so the quarter split matches Shopify's last-click split
+const CAL_F=(()=>{const ga={};GROUPS.forEach(g=>ga[g]=0);Object.values(PAY.chan_daily||{}).forEach(rs=>rs.forEach(x=>ga[gaGroup(x.ch)]+=x.rev||0));
+ const gT=Object.values(ga).reduce((a,b)=>a+b,0),sT=GROUPS.reduce((a,g)=>a+SHG[g].sales,0),f={};
+ GROUPS.forEach(g=>f[g]=HAS_SHOPCH&&ga[g]>0&&SHG[g].sales>0?(SHG[g].sales/sT)/(ga[g]/gT):1);return f;})();
+const GAOV=g=>SHG[g]&&SHG[g].ord>=20?SHG[g].sales/SHG[g].ord:(sum(Object.values(SHG),'sales')/sum(Object.values(SHG),'ord'));
+// one day (or range) of channel contribution, by group
+function chanGroups(days){const o={};GROUPS.forEach(g=>o[g]={g,net:0,sess:0,ord:0,rev:0});
+ days.forEach(r=>{const ch=(PAY.chan_daily||{})[r.d]||[];const w={};ch.forEach(x=>{const g=gaGroup(x.ch);w[g]=(w[g]||0)+(x.rev||0)*CAL_F[g];o[g].sess+=x.sess||0;o[g].rev+=x.rev||0;});
+  const W=Object.values(w).reduce((a,b)=>a+b,0);Object.entries(w).forEach(([g,v])=>{const n=W?r.net*v/W:0;o[g].net+=n;o[g].ord+=n/GAOV(g);});});
+ return GROUPS.map(g=>o[g]).filter(x=>x.sess>0||x.net>0).sort((a,b)=>b.net-a.net);}
+const GCOL=g=>g==='Other'?css('--py'):css('--s'+(GROUPS.indexOf(g)+1));
 const EST='<span class="muted" style="font-size:9px"> est.</span>';
 const HAS_COMMS=(PAY.comms||[]).length>0, HAS_CHAN=Object.keys(PAY.chan_daily||{}).length>0;
 function openDay(d){const r=DI[d];if(!r)return;const p=periodOf(d);
@@ -303,13 +320,11 @@ function openDay(d){const r=DI[d];if(!r)return;const p=periodOf(d);
  if(sm.length)h+=`<div class="blk"><h4>Klaviyo SMS campaigns sent (${sm.length})</h4>`+sm.map(c=>`<div class="li"><span class="tag">SMS</span><b>${esc(c.name)}</b><br><span class="muted" style="font-size:12px">${n0(c.rcpt)} delivered · click ${pc(c.click,2)} · ${m0(c.rev)} revenue</span></div>`).join('')+`</div>`;
  const ch=((PAY.chan_daily||{})[d]||[]).filter(x=>(x.rev||0)>0||(x.sess||0)>0).sort((a,b)=>(b.rev||0)-(a.rev||0));
  h+=`<div class="blk"><h4>Channel contribution that day</h4>`+(!HAS_CHAN?'<div class="li muted">No daily channel data loaded. Add a GA4 report with Date × Session default channel group (sessions, total revenue, transactions) as <code>raw/ga4/channel_daily.csv</code> and rebuild.</div>':
-  (()=>{const t=ch.reduce((a,x)=>a+(x.rev||0),0),hasTx=ch.some(x=>ok(x.tx));
-  const rows=ch.map(x=>{const sh=t?(x.rev||0)/t:0,net=r.net*sh,rpt=RPT[x.ch]||RPT._all,ord=hasTx?(x.tx||0):(x.rev||0)/rpt;return {ch:x.ch,net,sh,sess:x.sess,ord,cvr:x.sess?ord/x.sess:null,rev:x.rev};});
-  const T=k=>rows.reduce((a,x)=>a+(x[k]||0),0);
-  return `<div class="tw" style="max-height:none"><table><thead><tr><th class="l">Channel</th><th>Net sales${EST}</th><th>Share</th><th>Sessions</th><th>Orders${hasTx?'':EST}</th><th>CVR${hasTx?'':EST}</th><th>GA4 revenue</th></tr></thead><tbody>`+
-   rows.map(x=>`<tr><td class="l strong"><span class="pdot" style="background:${chColor(x.ch)}"></span>${esc(x.ch)}</td><td class="strong">${m0(x.net)}</td><td>${pc(x.sh,1)}</td><td>${n0(x.sess)}</td><td>${n0(x.ord)}</td><td>${pc(x.cvr)}</td><td class="muted">${m0(x.rev)}</td></tr>`).join('')+
-   `<tr><td class="l strong">Total</td><td class="strong">${m0(T('net'))}</td><td>100%</td><td>${n0(T('sess'))}</td><td>${n0(T('ord'))}</td><td>${pc(T('sess')?T('ord')/T('sess'):null)}</td><td class="muted">${m0(t)}</td></tr></tbody></table></div>
-   <div class="src">Sessions and GA4 revenue are GA4 session-channel data. <b>Net sales</b> splits Shopify's net sales for the day (${m0(r.net)}) by each channel's share of GA4 revenue. ${hasTx?'Orders are GA4 transactions.':'<b>Orders</b> are GA4 revenue ÷ that channel\'s Q4 revenue per transaction (from the GA4 first-user channel report). <b>CVR</b> = estimated orders ÷ sessions.'} Shopify sessions (${n0(r.sess)}) differ from GA4's count.</div>`;})())+`</div>`;
+  (()=>{const rows=chanGroups([r]),T=k=>rows.reduce((a,x)=>a+(x[k]||0),0);
+  return `<div class="tw" style="max-height:none"><table><thead><tr><th class="l">Channel</th><th>Net sales${EST}</th><th>Share</th><th>Sessions</th><th>Orders${EST}</th><th>CVR${EST}</th></tr></thead><tbody>`+
+   rows.map(x=>`<tr><td class="l strong"><span class="pdot" style="background:${GCOL(x.g)}"></span>${esc(x.g)}</td><td class="strong">${m0(x.net)}</td><td>${pc(T('net')?x.net/T('net'):null,1)}</td><td>${n0(x.sess)}</td><td>${n0(x.ord)}</td><td>${pc(x.sess?x.ord/x.sess:null)}</td></tr>`).join('')+
+   `<tr><td class="l strong">Total</td><td class="strong">${m0(T('net'))}</td><td>100%</td><td>${n0(T('sess'))}</td><td>${n0(T('ord'))}</td><td>${pc(T('sess')?T('ord')/T('sess'):null)}</td></tr></tbody></table></div>
+   <div class="src">Shopify only reports channel sales for the whole quarter, so daily figures are estimates. <b>Net sales</b>: the day's Shopify net (${m0(r.net)}) split by each channel's GA4 revenue that day, calibrated so the quarter split matches Shopify's last-click channel report. <b>Orders</b>: estimated net ÷ the channel's Shopify AOV. <b>Sessions</b> are GA4.</div>`;})())+`</div>`;
  h+=`<div class="blk"><h4>Search that day</h4><div class="li">Google Ads: <b>${m0(r.g_cost)}</b> spend · ${n0(r.g_clk)} clicks · ${ok(r.g_conv)?r.g_conv.toFixed(1):'—'} conversions · ${r.g_conv?m2(r.g_cost/r.g_conv):'—'} per conversion</div>
   <div class="li">Organic (Search Console): <b>${n0(r.sc_clk)}</b> clicks · ${n0(r.sc_imp)} impressions · CTR ${pc(r.sc_ctr,1)} · avg position ${ok(r.sc_pos)?r.sc_pos.toFixed(1):'—'}</div></div>`;
  $('#mbody').innerHTML=h;$('#mask').classList.add('on');$('#mx').focus();}
@@ -428,9 +443,8 @@ function openPeriod(s0,e0,name){const rs=rng(s0,e0),A=agg(rs),B=agg(rs,'py_'),g=
  const other=em.filter(c=>!isSaleEmail(c));
  if(other.length)h+=`<div class="blk"><h4>Other emails (${other.length})</h4>${other.map(c=>`<div class="li"><span class="tag">Email</span><b>${esc(c.subj)}</b> <span class="muted" style="font-size:12px">· ${fd(c.d)} · ${n0(c.rcpt)} sent · click ${pc(c.click,2)}</span></div>`).join('')}</div>`;
  h+=`<div class="blk"><h4>Launches (${L.length})</h4>${L.length?`<div class="li">${L.map(l=>`<b>${fds(l.d)}</b> ${esc(l.name)}`).join(' · ')}</div>`:'<div class="li">None</div>'}</div>`;
- if(HAS_CHAN){const t={},se={};rs.forEach(r=>{const ch=PAY.chan_daily[r.d]||[],tot=ch.reduce((a,x)=>a+(x.rev||0),0);ch.forEach(x=>{t[x.ch]=t[x.ch]||{net:0,rev:0,sess:0,ord:0};const o=t[x.ch];o.rev+=x.rev||0;o.sess+=x.sess||0;o.net+=tot?r.net*(x.rev||0)/tot:0;o.ord+=(x.rev||0)/(RPT[x.ch]||RPT._all);});});
-  const rows=Object.entries(t).sort((a,b)=>b[1].net-a[1].net).filter(([c,o])=>o.sess>50);const T=rows.reduce((a,[c,o])=>a+o.net,0);
-  h+=`<div class="blk"><h4>Channel contribution</h4><div class="tw" style="max-height:none"><table><thead><tr><th class="l">Channel</th><th>Net sales${EST}</th><th>Share</th><th>Sessions</th><th>Orders${EST}</th><th>CVR${EST}</th></tr></thead><tbody>${rows.map(([c,o])=>`<tr><td class="l strong"><span class="pdot" style="background:${chColor(c)}"></span>${esc(c)}</td><td>${m0(o.net)}</td><td>${pc(T?o.net/T:null,1)}</td><td>${n0(o.sess)}</td><td>${n0(o.ord)}</td><td>${pc(o.sess?o.ord/o.sess:null)}</td></tr>`).join('')}</tbody></table></div><div class="src">Estimated the same way as the day pop-up: Shopify net sales split by GA4 revenue share each day.</div></div>`;}
+ if(HAS_CHAN){const rows=chanGroups(rs),T=rows.reduce((a,x)=>a+x.net,0);
+  h+=`<div class="blk"><h4>Channel contribution</h4><div class="tw" style="max-height:none"><table><thead><tr><th class="l">Channel</th><th>Net sales${EST}</th><th>Share</th><th>Sessions</th><th>Orders${EST}</th><th>CVR${EST}</th></tr></thead><tbody>${rows.map(x=>`<tr><td class="l strong"><span class="pdot" style="background:${GCOL(x.g)}"></span>${esc(x.g)}</td><td>${m0(x.net)}</td><td>${pc(T?x.net/T:null,1)}</td><td>${n0(x.sess)}</td><td>${n0(x.ord)}</td><td>${pc(x.sess?x.ord/x.sess:null)}</td></tr>`).join('')}</tbody></table></div><div class="src">Estimated the same way as the day pop-up.</div></div>`;}
  $('#mbody').innerHTML=h;$('#mask').classList.add('on');$('#mx').focus();}
 
 /* ---- Performance ---- */
@@ -510,7 +524,7 @@ RENDER.bfcm=()=>{const bf=DI['2025-11-28'];const run=rng('2025-11-21','2025-12-0
 
 /* ---- Channels ---- */
 RENDER.chan=()=>{const C=PAY.channels.filter(c=>c.rev>0||c.users>100);const tot=PAY.channels.reduce((a,c)=>a+(c.rev||0),0);
- $('#t-chan').innerHTML=`<div class="sec"><div class="sech"><h2>Channel contribution</h2><span class="sub">GA4 · 1 Oct – 31 Dec 2025. Charts and table below use first-user channel</span></div>
+ $('#t-chan').innerHTML=`${HAS_SHOPCH?shopChanHTML():''}<div class="sec"><div class="sech"><h2>GA4 channel contribution</h2><span class="sub">GA4 · 1 Oct – 31 Dec 2025. Charts and table below use first-user channel</span></div>
  <div class="kpis">${kpi('GA4 revenue',kk(tot),'<span class="d">Shopify net: '+kk(agg(D).net)+'</span>')}${kpi('Transactions',n0(PAY.ga_total.tx),'')}${kpi('Total users',n0(PAY.ga_total.users),'')}${kpi('New users',n0(PAY.ga_total.newu),'')}
  ${kpi('Direct share',pc(C.find(c=>c.ch==='Direct').rev/tot,1),'<span class="d">of GA4 revenue</span>')}${kpi('Paid share',pc(C.filter(c=>/^Paid|Cross/.test(c.ch)).reduce((a,c)=>a+c.rev,0)/tot,1),'<span class="d">Shopping + Search + Social + PMax</span>')}</div></div>
  ${HAS_CHAN?`<div class="sec"><div class="sech"><h2>Channel contribution over time</h2><span class="sub">GA4 revenue by session channel, Sunday to Saturday weeks</span></div>
@@ -522,6 +536,7 @@ RENDER.chan=()=>{const C=PAY.channels.filter(c=>c.rev>0||c.users>100);const tot=
  <div class="sec"><div class="sech"><h2>Revenue per new user</h2><span class="sub">Revenue ÷ new users acquired by the channel</span></div><div class="panel"><div class="chartbox"><canvas id="c-cu"></canvas></div></div></div></div>
  <div class="note">Direct and organic search account for <b>${pc((C.find(c=>c.ch==='Direct').rev+C.find(c=>c.ch==='Organic Search').rev)/tot,0)}</b> of revenue. Livestock's demand is brand-led. Email returns <b>${m2(C.find(c=>c.ch==='Email').rev/C.find(c=>c.ch==='Email').newu)}</b> per new user, ahead of Direct and Organic Search. Paid Social brings volume but only <b>${m2(C.find(c=>c.ch==='Paid Social').rev/C.find(c=>c.ch==='Paid Social').newu)}</b>, the lowest return per user among paid channels.</div>
  <div class="sec"><div class="sech"><h2>Channel detail</h2></div><div id="ch-t"></div></div>`;
+ if(HAS_SHOPCH)shopChanDraw();
  if(HAS_CHAN){const wk={};Object.entries(PAY.chan_daily).forEach(([d,rs])=>{const dt=dl(d);dt.setDate(dt.getDate()-dt.getDay());const k=dt.toISOString().slice(0,10);
   const w=wk[k]=wk[k]||{};rs.forEach(x=>{const c=CH_TOP.includes(x.ch)?x.ch:'Other';w[c]=w[c]||{rev:0,sess:0};w[c].rev+=x.rev||0;w[c].sess+=x.sess||0;});});
   const ks=Object.keys(wk).sort(),series=[...CH_TOP,'Other'];
@@ -540,6 +555,30 @@ RENDER.chan=()=>{const C=PAY.channels.filter(c=>c.rev>0||c.users>100);const tot=
  table($('#ch-t'),[{k:'ch',t:'Channel',l:1,cls:'strong'},{k:'rev',t:'Revenue',f:r=>m0(r.rev)},{k:'sh',t:'Share',v:r=>r.rev/tot,f:r=>pc(r.rev/tot,1)},{k:'tx',t:'Transactions',f:r=>n0(r.tx)},
   {k:'aov',t:'Rev / tx',v:r=>r.tx?r.rev/r.tx:null,f:r=>r.tx?m2(r.rev/r.tx):'—'},{k:'users',t:'Total users',f:r=>n0(r.users)},{k:'newu',t:'New users',f:r=>n0(r.newu)},{k:'retu',t:'Returning',f:r=>n0(r.retu)},
   {k:'rpu',t:'Rev / new user',v:r=>r.newu?r.rev/r.newu:null,f:r=>r.newu?m2(r.rev/r.newu):'—'},{k:'ke',t:'Key events',f:r=>n0(r.ke)},{k:'ker',t:'User KE rate',f:r=>pc(r.ker,1)},{k:'eng',t:'Eng. sess / user',f:r=>ok(r.eng)?r.eng.toFixed(2):'—'}],C);};
+
+function shopChanHTML(){const G=GROUPS.map(g=>SHG[g]).filter(x=>x.n),S=sum(G,'sales'),O=sum(G,'ord'),SS=sum(G,'sess'),NO=sum(G,'newo'),RO=sum(G,'reto');
+ return `<div class="sec"><div class="sech"><h2>Shopify channel performance</h2><span class="sub">Last click by referring platform · 1 Oct – 31 Dec 2025 · whole quarter only</span></div>
+ <div class="kpis">${kpi('Attributed sales',kk(S),'<span class="d">net sales '+kk(agg(D).net)+'</span>')}${kpi('Orders',n0(O),'<span class="d">actual Shopify orders</span>')}${kpi('Sessions',n0(SS),'')}${kpi('Conversion rate',pc(O/SS),'')}${kpi('AOV',m2(S/O),'')}
+ ${kpi('New-customer orders',pc(NO/(NO+RO),1),'<span class="d">'+n0(NO)+' of '+n0(NO+RO)+'</span>')}</div>
+ <div class="two" style="margin-top:14px"><div><div class="legend"><span>Sales by channel</span></div><div class="panel"><div class="chartbox sm"><canvas id="c-shs"></canvas></div></div></div>
+ <div><div class="legend"><span><i class="sw" style="background:var(--s1)"></i>Orders from new customers</span><span><i class="sw" style="background:var(--s2)"></i>Returning</span></div><div class="panel"><div class="chartbox sm"><canvas id="c-shn"></canvas></div></div></div></div>
+ <div id="sh-t" style="margin-top:12px"></div>
+ <div class="note" id="sh-n" style="margin-top:12px"></div>
+ <div class="sech" style="margin-top:6px"><h2 style="font-size:15px">Every referring platform</h2><span class="sub">Search and sort</span></div>
+ <div class="ctl"><input type="text" id="shq" placeholder="Search platforms" style="min-width:240px"></div><div id="sh-p"></div></div>`;}
+function shopChanDraw(){const G=GROUPS.map(g=>SHG[g]).filter(x=>x.n).sort((a,b)=>b.sales-a.sales),S=sum(G,'sales');
+ mk('c-shs',{type:'bar',data:{labels:G.map(x=>x.g),datasets:[{label:'Sales',data:G.map(x=>x.sales),backgroundColor:G.map(x=>GCOL(x.g))}]},options:barOpts('money',true)});
+ mk('c-shn',{type:'bar',data:{labels:G.map(x=>x.g),datasets:[{label:'New',data:G.map(x=>x.newo/(x.newo+x.reto||1)),backgroundColor:css('--s1'),borderColor:css('--panel'),borderWidth:{right:2},borderRadius:0},{label:'Returning',data:G.map(x=>x.reto/(x.newo+x.reto||1)),backgroundColor:css('--s2'),borderRadius:0}]},
+  options:barOpts('pct1',true,{scales:{y:{stacked:true,grid:{display:false}},x:{stacked:true,max:1,grid:{color:css('--grid')},ticks:{callback:v=>pc(v,0)}}},plugins:{tooltip:{callbacks:{label:c=>' '+c.dataset.label+': '+pc(c.raw,1)}}}})});
+ table($('#sh-t'),[{k:'g',t:'Channel',l:1,cls:'strong',f:x=>`<span class="pdot" style="background:${GCOL(x.g)}"></span>${esc(x.g)}`},{k:'sales',t:'Sales',f:x=>m0(x.sales)},{k:'sh',t:'Share',v:x=>x.sales/S,f:x=>pc(x.sales/S,1)},{k:'sess',t:'Sessions',f:x=>n0(x.sess)},
+  {k:'ord',t:'Orders',f:x=>n0(x.ord)},{k:'cvr',t:'CVR',v:x=>x.sess?x.ord/x.sess:null,f:x=>pc(x.sess?x.ord/x.sess:null)},{k:'aov',t:'AOV',v:x=>x.ord?x.sales/x.ord:null,f:x=>x.ord?m2(x.sales/x.ord):'—'},{k:'spo',t:'Sales / session',v:x=>x.sess?x.sales/x.sess:null,f:x=>x.sess?m2(x.sales/x.sess):'—'},
+  {k:'newo',t:'New-cust. orders',f:x=>n0(x.newo)},{k:'nsh',t:'% new',v:x=>x.newo/(x.newo+x.reto||1),f:x=>pc(x.newo/(x.newo+x.reto||1),0)}],G);
+ const g=n=>SHG[n],cv=x=>x.ord/x.sess;
+ $('#sh-n').innerHTML=`<b>Read-out.</b> Direct drives the most sessions (${n0(g('Direct').sess)}) but converts at only <b>${pc(cv(g('Direct')))}</b>. Organic and paid Google both convert at ~${pc(cv(g('Organic search')),1)}–${pc(cv(g(GROUPS[0])),1)}. Paid Google brings the highest share of <b>new customers</b> (${pc(g(GROUPS[0]).newo/(g(GROUPS[0]).newo+g(GROUPS[0]).reto),0)} of its orders). Klaviyo email is a returning-customer channel (${pc(g('Email (Klaviyo)').reto/(g('Email (Klaviyo)').newo+g('Email (Klaviyo)').reto),0)} returning) with a <b>${m2(g('Email (Klaviyo)').sales/g('Email (Klaviyo)').ord)}</b> AOV. Meta sends ${n0(g('Meta').sess)} sessions for ${kk(g('Meta').sales)} in sales, a ${pc(cv(g('Meta')))} conversion rate.`;
+ const P=PAY.shop_ch.map(x=>Object.assign({grp:shGroup(x)},x));
+ const cols=[{k:'plat',t:'Platform',l:1,cls:'strong'},{k:'ch',t:'Channel',l:1},{k:'type',t:'Type',l:1},{k:'grp',t:'Group',l:1,f:x=>`<span class="pdot" style="background:${GCOL(x.grp)}"></span>${esc(x.grp)}`},{k:'sess',t:'Sessions',f:x=>n0(x.sess)},{k:'sales',t:'Sales',f:x=>m0(x.sales)},{k:'ord',t:'Orders',f:x=>n0(x.ord)},
+  {k:'cvr',t:'CVR',v:x=>x.sess?x.ord/x.sess:null,f:x=>pc(x.sess?x.ord/x.sess:null)},{k:'aov',t:'AOV',v:x=>x.ord?x.sales/x.ord:null,f:x=>x.ord?m2(x.sales/x.ord):'—'},{k:'newo',t:'New',f:x=>n0(x.newo)},{k:'reto',t:'Returning',f:x=>n0(x.reto)}];
+ const draw=q=>table($('#sh-p'),cols,P.filter(x=>!q||(x.plat+' '+x.ch+' '+x.type).toLowerCase().includes(q)),{h:420});draw('');$('#shq').oninput=e=>draw(e.target.value.toLowerCase().trim());}
 
 /* ---- Products ---- */
 RENDER.prod=()=>{const B=PAY.brands.slice(0,15),P=PAY.products;
@@ -621,6 +660,7 @@ RENDER.notes=()=>{$('#t-notes').innerHTML=`<div class="sec"><div class="sech"><h
  <div><h4>GA4</h4><p>User acquisition by first-user channel (users, key events, revenue, transactions) and pages and screens by title (views, users, key events). GA4 revenue (${kk(PAY.ga_total.rev)}) is gross and differs from Shopify net sales by design.</p></div>
  <div><h4>Release calendar</h4><p>${PAY.launches.length} launches transcribed from the launch calendar screenshots. Each launch is matched to its GA4 product page by name, and ${PAY.launches.filter(l=>l.match).length} matched. Lines truncated in the screenshot (e.g. "Show all (4)" on 10 Oct) may be incomplete.</p></div>
  <div><h4>Klaviyo campaigns</h4><p>${(PAY.comms||[]).length} email campaigns sent 1 Oct – 31 Dec 2025: recipients, open and click rates, active on site, unsubscribes. The export has no revenue column. Sale dates on the timeline (early Black Friday 13 Nov, 70% off 25 Nov, last chance 2 Dec, Boxing Week 24 Dec) come from these sends.</p></div>
+ <div><h4>Shopify channel performance</h4><p>Sessions, sales, orders, conversion rate, AOV and new vs returning orders by referring platform, for the whole quarter (last click). Used for the Shopify channel section and to calibrate the daily channel estimates.</p></div>
  <div><h4>Brand performance report</h4><p>The YouTube/Display brand performance export contained no data (all nulls), so it is not charted.</p></div></div></div>
  <div class="sec"><div class="sech"><h2>Caveats</h2></div>
  <div class="note">Trading periods are analytical windows. Sale moments on the timeline are inferred from Klaviyo send dates and subject lines, not from a promo calendar. Edit <code>periods</code> and <code>events</code> in <code>build/build_data.py</code> to change them. The same-date YoY puts Black Friday 2025 (28 Nov) against US Thanksgiving 2024. Use the "same weekday" comparison on the Performance tab, or the BFCM tab, for event-aligned reads.</div></div>`;};
