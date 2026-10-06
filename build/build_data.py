@@ -329,6 +329,68 @@ if os.path.exists(sp):
                             sales=num(r['Sales']) or 0, ord=num(r['Orders']) or 0,
                             newo=num(r['Orders from new customers']) or 0, reto=num(r['Orders from returning customers']) or 0))
 
+# ---------------- Homepage content (LS 25 sheet of the content master) ----------------
+homepage = []
+hp_path = os.path.join(RAW, 'content_master.xlsx')
+if os.path.exists(hp_path):
+    import datetime as _dt
+    ws = openpyxl.load_workbook(hp_path, read_only=True, data_only=True)['LS 25']
+    SLOTS = ['3UP', '2UP_1', '2UP_2', '2UP_3', '2UP_4', '2UP_5', '2UP_6', 'Release Component', 'SITE STRIPE']
+
+    def clean(v):
+        v = re.sub(r'https?://\S+', '', v or '')
+        v = re.sub(r'\((DONE|new|NEW|new wk\.?|shifted|re-format|DNU|NOT SHOT|if shot|THURS|tmrw|Wed|refresh|fresh|same|any old if available)\)', '', v, flags=re.I)
+        v = re.sub(r'\s+', ' ', v).strip(' .,*')
+        return v
+    prev, prev_copy = {}, {}
+    for r in ws.iter_rows(values_only=True):
+        if not isinstance(r[1], _dt.datetime) or not r[3]:
+            continue
+        d = r[1].date().isoformat()
+        if d < '2025-09-01' or d > '2025-12-31':
+            continue
+        txt = str(r[3])
+        if '3UP' not in txt:
+            homepage.append(dict(d=d, note=clean(txt)))
+            continue
+        cur = {}
+        for line in txt.splitlines():
+            m = re.match(r'\s*(3UP|2UP_\d|Release Component|SITE STRIPE)\s*:\s*(.*)', line, flags=re.I)
+            if not m:
+                continue
+            k, v = m.group(1).upper().replace('RELEASE COMPONENT', 'Release Component'), m.group(2)
+            if k == '3UP':
+                tiles = []
+                old = prev.get('3UP', [])
+                for i, t in enumerate([x for x in v.split(',') if x.strip()]):
+                    raw = t.strip()
+                    tc = clean(raw)
+                    if re.fullmatch(r'same', raw.strip(), flags=re.I) and i < len(old):
+                        tc = old[i]
+                    if tc and tc.upper() != 'TBD':
+                        tiles.append(tc)
+                cur['3UP'] = tiles
+            else:
+                raw = v.strip()
+                mm = re.fullmatch(r'same\s*\((.*)\)', raw, flags=re.I)
+                if mm:
+                    val = clean(mm.group(1))
+                elif re.fullmatch(r'same', raw, flags=re.I):
+                    val = prev.get(k, '')
+                else:
+                    val = clean(raw)
+                if val and val.upper() not in ('UPDATE THIS',):
+                    cur[k] = val
+        copy = {}
+        if r[4]:
+            for line in str(r[4]).splitlines():
+                m = re.match(r'\s*(3UP_\d|2UP_\d)_HEADER\s*:\s*(.*)', line)
+                if m:
+                    val = m.group(2).strip()
+                    copy[m.group(1)] = prev_copy.get(m.group(1), '') if val.lower() == 'no change' else val
+        prev, prev_copy = cur, (copy or prev_copy)
+        homepage.append(dict(d=d, slots=cur, copy=copy))
+
 # Markdown windows inferred from Klaviyo send dates and subject lines (no promo calendar was supplied)
 sales = [
     dict(n='Black Friday sale', s='2025-11-13', e='2025-12-03', k='bf',
@@ -337,10 +399,10 @@ sales = [
          src='Klaviyo: "Boxing Week is Here!" (24 Dec), "Boxing Week Continues!" (29 Dec). End date not stated; runs to the end of the data'),
 ]
 
-out = dict(shop_ch=shop_ch, sales=sales, comms=comms, chan_daily=chan_daily, daily=daily, ads=ads, gsc=gsc, channels=channels, products=products[:300], brands=brands,
+out = dict(homepage=homepage, shop_ch=shop_ch, sales=sales, comms=comms, chan_daily=chan_daily, daily=daily, ads=ads, gsc=gsc, channels=channels, products=products[:300], brands=brands,
            keypages=keypages, launches=launches, events=events, periods=periods,
            ga_total=dict(rev=1574189.30, tx=8000, users=360925, newu=366398, views=2366985))
 with open(OUT, 'w') as f:
     json.dump(out, f, separators=(',', ':'), ensure_ascii=False)
-print('comms', len(comms), 'chan_daily days', len(chan_daily), 'daily', len(daily), 'launches', len(launches), 'matched', sum(1 for l in launches if l['match']),
+print('homepage', len(homepage), 'comms', len(comms), 'chan_daily days', len(chan_daily), 'daily', len(daily), 'launches', len(launches), 'matched', sum(1 for l in launches if l['match']),
       'products', len(products), 'bytes', os.path.getsize(OUT))
