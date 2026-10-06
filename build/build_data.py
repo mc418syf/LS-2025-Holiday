@@ -320,8 +320,15 @@ periods = [
     dict(n='Holiday gifting', s='2025-12-02', e='2025-12-23', k='gift'),
     dict(n='Christmas & Boxing Week', s='2025-12-24', e='2025-12-31', k='box'),
 ]
+# Markdown windows inferred from Klaviyo send dates and subject lines (no promo calendar was supplied)
+sales = [
+    dict(n='Black Friday sale', s='2025-11-13', e='2025-12-03', k='bf',
+         src='Klaviyo: "Early Black Friday is live" (13 Nov, 50% off), "NOW Up to 70% OFF" (25 Nov), "ENDING in 24 hours" (2 Dec)'),
+    dict(n='Boxing Week sale', s='2025-12-24', e='2025-12-31', k='box',
+         src='Klaviyo: "Boxing Week is Here!" (24 Dec), "Boxing Week Continues!" (29 Dec). End date not stated; runs to the end of the data'),
+]
 
-out = dict(comms=comms, chan_daily=chan_daily, daily=daily, ads=ads, gsc=gsc, channels=channels, products=products[:300], brands=brands,
+out = dict(sales=sales, comms=comms, chan_daily=chan_daily, daily=daily, ads=ads, gsc=gsc, channels=channels, products=products[:300], brands=brands,
            keypages=keypages, launches=launches, events=events, periods=periods,
            ga_total=dict(rev=1574189.30, tx=8000, users=360925, newu=366398, views=2366985))
 with open(OUT, 'w') as f:
