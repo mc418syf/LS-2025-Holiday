@@ -68,6 +68,7 @@ th{position:sticky;top:0;background:var(--panel2);color:var(--ink);font-family:'
 th.l,td.l{text-align:left}
 td{padding:7px 10px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap;color:var(--ink2)}
 td.wrap{white-space:normal;min-width:260px}
+td.hpc{min-width:190px;max-width:230px;font-size:12px}
 tbody tr:hover td{background:var(--panel2);color:var(--ink)}
 td.strong{color:var(--ink);font-weight:600}
 .cal-mon{font-family:'Barlow Condensed';font-size:17px;letter-spacing:.14em;text-transform:uppercase;margin:18px 0 8px;border-bottom:1px solid var(--line);padding-bottom:5px}
@@ -303,6 +304,15 @@ function chanGroups(days){const o={};GROUPS.forEach(g=>o[g]={g,net:0,sess:0,ord:
  return GROUPS.map(g=>o[g]).filter(x=>x.sess>0||x.net>0).sort((a,b)=>b.net-a.net);}
 const GCOL=g=>g==='Other'?css('--py'):css('--s'+(GROUPS.indexOf(g)+1));
 const EST='<span class="muted" style="font-size:9px"> est.</span>';
+const HPV=(PAY.homepage||[]).filter(h=>h.slots).sort((a,b)=>a.d<b.d?-1:1),HPN=(PAY.homepage||[]).filter(h=>h.note);
+const hpFor=d=>{let v=null;HPV.forEach(h=>{if(h.d<=d)v=h;});return v;};
+const hpNext=v=>{const i=HPV.indexOf(v);return i>=0&&i<HPV.length-1?HPV[i+1].d:null;};
+const hpNotes=d=>{const v=hpFor(d);return HPN.filter(n=>n.d<=d&&(!v||n.d>=v.d));};
+function hpHTML(v,compact){if(!v)return '<div class="li">No homepage plan recorded</div>';const S=v.slots,C=v.copy||{};
+ const three=(S['3UP']||[]).map(t=>'<b>'+esc(t)+'</b>').join(' · '),hd=[...new Set(Object.keys(C).sort().map(k=>C[k]).filter(Boolean))];
+ const two=[1,2,3,4,5,6].map(i=>S['2UP_'+i]).filter(Boolean).map(esc).join(' · ');
+ return `<div class="li"><span class="tag">3UP</span>${three||'—'}</div>${hd.length?`<div class="li"><span class="tag">Headlines</span>${hd.map(x=>'“'+esc(x)+'”').join(' · ')}</div>`:''}${two?`<div class="li"><span class="tag">2UP</span>${two}</div>`:''}${S['Release Component']?`<div class="li"><span class="tag">Release</span>${esc(S['Release Component'])}</div>`:''}${S['SITE STRIPE']?`<div class="li"><span class="tag">Site stripe</span>${esc(S['SITE STRIPE'])}</div>`:''}`;}
+const hpShort=d=>{const v=hpFor(d);return v?(v.slots['3UP']||[]).join(' · '):'';};
 const HAS_COMMS=(PAY.comms||[]).length>0, HAS_CHAN=Object.keys(PAY.chan_daily||{}).length>0;
 function openDay(d){const r=DI[d];if(!r)return;const p=periodOf(d);
  $('#mtitle').textContent=fdl(d);
@@ -317,6 +327,7 @@ function openDay(d){const r=DI[d];if(!r)return;const p=periodOf(d);
  <div class="src" style="margin:-8px 0 10px">Changes are against the same date in 2024 (${m0(r.py_net)} net). Same weekday last year (${fd(r.wpyd)}): ${m0(r.wpy_net)} net, ${dcellTxt(delta(r.net,r.wpy_net)).replace(' YoY','')}.</div>`;
  h+=`<div class="blk"><h4>Trading period</h4><div class="li"><span class="pdot" style="background:${KC(p.k)}"></span><b>${esc(p.n)}</b> <span class="muted">${fds(p.s)} – ${fds(p.e)}</span></div>${saleOf(d)?`<div class="li"><span class="salebadge">On sale</span> <b>${esc(saleOf(d).n)}</b> <span class="muted">${fds(saleOf(d).s)} – ${fds(saleOf(d).e)}</span></div>`:'<div class="li muted">Full price day</div>'}${E.map(e=>`<div class="li" style="border-left:3px solid ${KC(e.k)};padding-left:9px"><b>Key date</b> · ${esc(e.n)}</div>`).join('')}</div>`;
  h+=`<div class="blk"><h4>Launches (${L.length})</h4>${L.length?L.map(l=>`<div class="li"><span class="badge">Launch</span> <b>${esc(l.name)}</b><br><span class="muted" style="font-size:12px">${l.match?`PDP over Q4: ${n0(l.v)} views · ${n0(l.u)} users · ${n0(l.ke)} key events`:'No matching product page in the GA4 export'}</span></div>`).join(''):'<div class="li">No launches on the release calendar</div>'}</div>`;
+ {const v=hpFor(d),nt=hpNotes(d);h+=`<div class="blk"><h4>Homepage that day ${v?`<span class="muted" style="font-weight:400;text-transform:none;letter-spacing:0">(version of ${fd(v.d)}${hpNext(v)?', live until '+fds(hpNext(v)):''})</span>`:''}</h4>${nt.map(n=>`<div class="li" style="border-left:3px solid var(--bf);padding-left:9px"><b>Banner from ${fds(n.d)}</b> · ${esc(n.note)}</div>`).join('')}${hpHTML(v)}</div>`;}
  const em=C.filter(c=>!/sms/i.test(c.ch)),sm=C.filter(c=>/sms/i.test(c.ch));
  h+=`<div class="blk"><h4>Klaviyo email campaigns sent (${HAS_COMMS?em.length:'—'})</h4>`+(!HAS_COMMS?'<div class="li muted">Not in the uploaded files. Add a Klaviyo campaign export as <code>raw/klaviyo_campaigns.csv</code> and rebuild to list each send here.</div>':
   em.length?em.map(c=>`<div class="li"><span class="tag">Email</span><b>${esc(c.subj||c.name)}</b> <span class="muted">${esc(c.t)}</span><br><span class="muted" style="font-size:12px">${esc(c.name)}</span><br><span class="muted" style="font-size:12px">${n0(c.rcpt)} recipients · open ${pc(c.open,1)} · click ${pc(c.click,2)} (${n0(c.clicks)} unique) · ${n0(c.aos)} active on site · ${n0(c.unsub)} unsubs${ok(c.rev)?' · '+m0(c.rev)+' attributed revenue':''}${c.seg?' · list: '+esc(c.seg):''}</span></div>`).join('')+(em.some(c=>ok(c.rev))?'':'<div class="src">The Klaviyo export has no revenue column, so attributed revenue is not shown.</div>'):'<div class="li">No email campaign sent this day</div>')+`</div>`;
@@ -445,6 +456,7 @@ function openPeriod(s0,e0,name){const rs=rng(s0,e0),A=agg(rs),B=agg(rs,'py_'),g=
  h+=`<div class="blk"><h4>Sale emails sent during this period (${sem.length} of ${em.length})</h4>${sem.length?sem.map(c=>`<div class="li"><span class="tag">Email</span><span class="salebadge">Sale</span> <b>${esc(c.subj)}</b><br><span class="muted" style="font-size:12px">${fd(c.d)} ${esc(c.t)} · ${n0(c.rcpt)} sent · open ${pc(c.open,1)} · click ${pc(c.click,2)}</span></div>`).join(''):'<div class="li">No sale emails in this period</div>'}</div>`;
  const other=em.filter(c=>!isSaleEmail(c));
  if(other.length)h+=`<div class="blk"><h4>Other emails (${other.length})</h4>${other.map(c=>`<div class="li"><span class="tag">Email</span><b>${esc(c.subj)}</b> <span class="muted" style="font-size:12px">· ${fd(c.d)} · ${n0(c.rcpt)} sent · click ${pc(c.click,2)}</span></div>`).join('')}</div>`;
+ {const vs=HPV.filter(v=>v.d<=e0&&(hpNext(v)||'9999')>s0);if(vs.length)h+=`<div class="blk"><h4>Homepage during this period (${vs.length} version${vs.length>1?'s':''})</h4>${vs.map(v=>`<div class="li"><b>Week of ${fd(v.d)}</b>: ${(v.slots['3UP']||[]).map(esc).join(' / ')}${[1,2,3,4,5,6].map(i=>v.slots['2UP_'+i]).filter(Boolean).length?` <span class="muted">· 2UP: ${[1,2,3,4,5,6].map(i=>v.slots['2UP_'+i]).filter(Boolean).map(esc).join(' / ')}</span>`:''}</div>`).join('')}${HPN.filter(n=>n.d>=s0&&n.d<=e0).map(n=>`<div class="li" style="border-left:3px solid var(--bf);padding-left:9px"><b>Banner ${fds(n.d)}</b> · ${esc(n.note)}</div>`).join('')}</div>`;}
  h+=`<div class="blk"><h4>Launches (${L.length})</h4>${L.length?`<div class="li">${L.map(l=>`<b>${fds(l.d)}</b> ${esc(l.name)}`).join(' · ')}</div>`:'<div class="li">None</div>'}</div>`;
  if(HAS_CHAN){const rows=chanGroups(rs),T=rows.reduce((a,x)=>a+x.net,0);
   h+=`<div class="blk"><h4>Channel contribution</h4><div class="tw" style="max-height:none"><table><thead><tr><th class="l">Channel</th><th>Net sales${EST}</th><th>Share</th><th>Sessions</th><th>Orders${EST}</th><th>CVR${EST}</th></tr></thead><tbody>${rows.map(x=>`<tr><td class="l strong"><span class="pdot" style="background:${GCOL(x.g)}"></span>${esc(x.g)}</td><td>${m0(x.net)}</td><td>${pc(T?x.net/T:null,1)}</td><td>${n0(x.sess)}</td><td>${n0(x.ord)}</td><td>${pc(x.sess?x.ord/x.sess:null)}</td></tr>`).join('')}</tbody></table></div><div class="src">Estimated the same way as the day pop-up.</div></div>`;}
@@ -459,7 +471,7 @@ RENDER.perf=()=>{$('#t-perf').innerHTML=rail()+`<div class="sec"><div class="sec
   <span class="gl">Smoothing</span><button class="chip" data-s="0" id="pf-s">7-day average</button></div>
  <div class="legend"><span><i class="sw ln" style="background:var(--cy)"></i>2025</span><span><i class="sw dash"></i>2024 comparison</span><span><i class="sw ln" style="background:var(--bf)"></i>Retail calendar marker</span></div>
  <div class="panel"><div class="chartbox"><canvas id="c-pf"></canvas></div></div><div class="kpis" id="pf-k" style="margin-top:10px"></div></div>
- <div class="sec"><div class="sech"><h2>Daily detail</h2><span class="sub">Every day, every metric. Click a row to open the day</span></div><div id="pf-t"></div></div>`;
+ <div class="sec"><div class="sech"><h2>Daily detail</h2><span class="sub">Every day, every metric, with the emails sent and the homepage live. Click a row to open the day</span></div><div id="pf-t"></div></div>`;
  const draw=()=>{const [lab,fmt]=METRICS[perfM];const sm=a=>!perfSm?a:a.map((v,i)=>{const w=a.slice(Math.max(0,i-3),i+4).filter(ok);return w.length?w.reduce((x,y)=>x+y,0)/w.length:null;});
   mk('c-pf',{type:'line',data:{labels:LABELS,datasets:[cyDs('2025 '+lab,sm(D.map(r=>r[perfM]))),pyDs('2024 '+lab,sm(D.map(r=>r[perfCmp+perfM])))]},
    options:lineOpts(fmt,{onClick:(e,els)=>{if(els.length)openDay(D[els[0].index].d);},plugins:{markers:{days:evMarkers()},tooltip:{callbacks:{label:c=>' '+c.dataset.label+': '+(c.raw==null?'—':fmtBy[fmt](c.raw))}}}})});
@@ -469,10 +481,10 @@ RENDER.perf=()=>{$('#t-perf').innerHTML=rail()+`<div class="sec"><div class="sec
  $('#pf-c').onclick=e=>{const c=e.target.dataset.c;if(c){perfCmp=c;$('#pf-c').querySelectorAll('[data-c]').forEach(x=>x.classList.toggle('on',x.dataset.c===c));}
   if(e.target.id==='pf-s'){perfSm=!perfSm;e.target.classList.toggle('on',perfSm);}draw();};
  draw();
- table($('#pf-t'),[{k:'d',t:'Date',l:1,cls:'strong',f:r=>fd(r.d)},{k:'net',t:'Net',f:r=>m0(r.net)},{k:'py_net',t:'Net 2024',f:r=>m0(r.py_net)},{k:'dn',t:'Δ',v:r=>delta(r.net,r.py_net),f:r=>dcell(delta(r.net,r.py_net))},
+ table($('#pf-t'),[{k:'d',t:'Date',l:1,cls:'strong',f:r=>fd(r.d)},{k:'hp',t:'Homepage 3UP',l:1,cls:'wrap hpc',v:r=>hpShort(r.d),f:r=>{const v=hpFor(r.d);return v?(v.d===r.d?'<span class="badge">New</span> ':'')+esc(hpShort(r.d)):'—';}},{k:'net',t:'Net',f:r=>m0(r.net)},{k:'py_net',t:'Net 2024',f:r=>m0(r.py_net)},{k:'dn',t:'Δ',v:r=>delta(r.net,r.py_net),f:r=>dcell(delta(r.net,r.py_net))},
   {k:'gross',t:'Gross',f:r=>m0(r.gross)},{k:'disc',t:'Disc.',f:r=>m0(r.disc)},{k:'ret',t:'Returns',f:r=>m0(r.ret)},{k:'sess',t:'Sessions',f:r=>n0(r.sess)},{k:'ds',t:'Δ sess',v:r=>delta(r.sess,r.py_sess),f:r=>dcell(delta(r.sess,r.py_sess))},
   {k:'cvr',t:'CVR',f:r=>pc(r.cvr)},{k:'py_cvr',t:'CVR 2024',f:r=>pc(r.py_cvr)},{k:'aov',t:'AOV',f:r=>m2(r.aov)},{k:'orders',t:'Orders',f:r=>n0(r.orders)},
-  {k:'g_cost',t:'Ads spend',f:r=>m0(r.g_cost)},{k:'sc_clk',t:'Organic clicks',f:r=>n0(r.sc_clk)},{k:'lc',t:'Launches',v:r=>(LBYD[r.d]||[]).length,f:r=>(LBYD[r.d]||[]).length||''}],D,{click:'d',onclick:openDay,h:560});};
+  {k:'g_cost',t:'Ads spend',f:r=>m0(r.g_cost)},{k:'sc_clk',t:'Organic clicks',f:r=>n0(r.sc_clk)},{k:'lc',t:'Launches',v:r=>(LBYD[r.d]||[]).length,f:r=>(LBYD[r.d]||[]).length||''},{k:'em',t:'Emails',v:r=>(CBYD[r.d]||[]).length,f:r=>(CBYD[r.d]||[]).map(c=>esc(c.subj)).join(' · ')||'—',l:1,cls:'wrap'}],D,{click:'d',onclick:openDay,h:560});};
 
 /* ---- BFCM ---- */
 RENDER.bfcm=()=>{const bf=DI['2025-11-28'];const run=rng('2025-11-21','2025-12-01');
@@ -672,6 +684,7 @@ RENDER.notes=()=>{$('#t-notes').innerHTML=`<div class="sec"><div class="sech"><h
  <div><h4>GA4</h4><p>User acquisition by first-user channel (users, key events, revenue, transactions) and pages and screens by title (views, users, key events). GA4 revenue (${kk(PAY.ga_total.rev)}) is gross and differs from Shopify net sales by design.</p></div>
  <div><h4>Release calendar</h4><p>${PAY.launches.length} launches transcribed from the launch calendar screenshots. Each launch is matched to its GA4 product page by name, and ${PAY.launches.filter(l=>l.match).length} matched. Lines truncated in the screenshot (e.g. "Show all (4)" on 10 Oct) may be incomplete.</p></div>
  <div><h4>Klaviyo campaigns</h4><p>${(PAY.comms||[]).length} email campaigns sent 1 Oct – 31 Dec 2025: recipients, open and click rates, active on site, unsubscribes. The export has no revenue column. Sale dates on the timeline (early Black Friday 13 Nov, 70% off 25 Nov, last chance 2 Dec, Boxing Week 24 Dec) come from these sends.</p></div>
+ <div><h4>Content master (homepage)</h4><p>${(PAY.homepage||[]).length} homepage plans from the LS 25 sheet: 3UP and 2UP tiles, release component and banners. Each version is treated as live from its date until the next one. Slots marked "same" carry over from the previous version.</p></div>
  <div><h4>Shopify channel performance</h4><p>Sessions, sales, orders, conversion rate, AOV and new vs returning orders by referring platform, for the whole quarter (last click). Used for the Shopify channel section and to calibrate the daily channel estimates.</p></div>
  <div><h4>Brand performance report</h4><p>The YouTube/Display brand performance export contained no data (all nulls), so it is not charted.</p></div></div></div>
  <div class="sec"><div class="sech"><h2>Caveats</h2></div>
