@@ -2,6 +2,7 @@
 <html lang="en-CA"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Livestock Q4 2025 Holiday</title>
+<link rel="icon" href="__LOGO__">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
@@ -32,7 +33,7 @@ h1,h2,h3,h4,.cond{font-family:'Barlow Condensed','Barlow',sans-serif;text-transf
 a{color:var(--ink)}
 header{position:sticky;top:0;z-index:60;background:var(--bg);border-bottom:1px solid var(--line)}
 .hbar{display:flex;align-items:center;gap:18px;padding:14px 22px 10px}
-.logo{font-family:'Barlow Condensed';font-weight:700;font-size:28px;letter-spacing:.02em;line-height:1;border:2px solid var(--ink);padding:3px 8px 2px;text-transform:uppercase}
+.logo{width:190px;height:28px;flex:0 0 auto;background:var(--ink);-webkit-mask:url(__LOGO__) left center/contain no-repeat;mask:url(__LOGO__) left center/contain no-repeat}
 .htitle .eyebrow{font-family:'Barlow Condensed';font-size:11px;letter-spacing:.24em;color:var(--ink3);text-transform:uppercase;display:block;margin-bottom:4px}
 .htitle h1{font-size:25px;line-height:1}
 .hmeta{margin-left:auto;text-align:right;font-size:11px;color:var(--ink3);font-family:'Barlow Condensed';letter-spacing:.1em;text-transform:uppercase;line-height:1.7}
@@ -167,11 +168,11 @@ td.cur{background:color-mix(in oklab,var(--cy) 22%,transparent)}
 .nvrsplit .a{background:var(--s1);border-right:2px solid var(--panel)}.nvrsplit .b{background:var(--s2)}
 .bar{height:8px;background:var(--cy);border-radius:0 4px 4px 0;display:inline-block;vertical-align:middle}
 @media(max-width:1100px){.two,.three{grid-template-columns:minmax(0,1fr)}}
-@media(max-width:640px){main{padding:16px}.hbar{padding:10px 16px;flex-wrap:wrap}.hmeta{margin-left:0;text-align:left}nav{padding:0 8px}.cal{gap:2px}.cell{min-height:64px;padding:4px 4px 8px}.cell .ln,.cell .ev,.cell .dd{display:none}.cell .mv{font-size:12px}.cell .lc{font-size:9px;right:2px;top:2px;padding:0 3px}.kpi .v{font-size:21px}}
+@media(max-width:640px){.logo{width:140px;height:21px}main{padding:16px}.hbar{padding:10px 16px;flex-wrap:wrap}.hmeta{margin-left:0;text-align:left}nav{padding:0 8px}.cal{gap:2px}.cell{min-height:64px;padding:4px 4px 8px}.cell .ln,.cell .ev,.cell .dd{display:none}.cell .mv{font-size:12px}.cell .lc{font-size:9px;right:2px;top:2px;padding:0 3px}.kpi .v{font-size:21px}}
 </style></head><body>
 <header>
  <div class="hbar">
-  <div class="logo">Livestock</div>
+  <div class="logo" role="img" aria-label="Livestock"></div>
   <div class="htitle"><span class="eyebrow">Holiday trading review · deadstock.ca</span><h1>Q4 2025 · What Happened</h1></div>
   <div class="hmeta">1 Oct – 31 Dec 2025 · 92 days<br>Shopify · GA4 · Google Ads · Search Console<br><button class="themebtn" id="themebtn">Light / dark</button></div>
  </div>
