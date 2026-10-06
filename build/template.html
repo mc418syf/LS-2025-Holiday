@@ -155,6 +155,7 @@ input[type=number]{background:var(--panel2);color:var(--ink);border:1px solid va
 .tag{display:inline-block;font-family:'Barlow Condensed';font-size:10px;letter-spacing:.12em;text-transform:uppercase;padding:1px 6px;border:1px solid var(--line2);color:var(--ink3);border-radius:2px;margin-right:4px}
 .pdot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;vertical-align:baseline}
 .muted{color:var(--ink3)}
+tr.sl td{background:color-mix(in oklab,var(--bf) 6%,transparent)}
 tr.hl td{background:color-mix(in oklab,var(--launch) 9%,transparent)}
 td.cur{background:color-mix(in oklab,var(--cy) 22%,transparent)}
 .bindbar{display:flex;height:22px;margin-top:10px;border:1px solid var(--line);overflow:hidden;border-radius:2px}
@@ -248,7 +249,7 @@ const markers={id:'markers',afterDatasetsDraw(c,a,o){if(!o||!o.days)return;const
   ctx.beginPath();ctx.moveTo(px,ar.top);ctx.lineTo(px,ar.bottom);ctx.stroke();ctx.globalAlpha=1;ctx.setLineDash([]);
   if(m.text){ctx.fillStyle=css('--ink2');ctx.font="600 10px 'Barlow Condensed'";ctx.textAlign='left';ctx.fillText(m.text.toUpperCase(),px+3,ar.top+10+(m.row||0)*12);}});ctx.restore();}};
 Chart.register(markers);
-const evMarkers=()=>PAY.events.filter(e=>['bf','box'].includes(e.k)||e.n==='Christmas Day').map((e,i)=>({label:fds(e.d),color:KC(e.k==='hol'?'hol':e.k),text:e.n,row:i%2}));
+const evMarkers=()=>PAY.events.filter(e=>['Black Friday','Cyber Monday','Christmas Day','Boxing Day'].includes(e.n)).map((e,i)=>({label:fds(e.d),color:KC(e.k==='hol'?'hol':e.k),text:e.n,row:i%2}));
 
 /* ---------- tables ---------- */
 function table(el,cols,rows,opts){opts=opts||{};let sk=opts.sort||null,sd=-1;
@@ -266,18 +267,22 @@ const kpi=(l,v,d)=>`<div class="kpi"><div class="l">${l}</div><div class="v">${v
 const SALES=PAY.sales||[];
 const saleOf=d=>SALES.find(x=>x.s<=d&&d<=x.e);
 const isSaleEmail=c=>/sale|% ?off|black friday|boxing|last chance/i.test((c.name||'')+' '+(c.subj||''));
+const MSG=PAY.promos_msg||[];
+const HAS_FP=D.some(r=>ok(r.fp)),HAS_NC=D.some(r=>ok(r.newc));
+function fullPriceGaps(){const gaps=[];let cur='2025-10-01';const nx=d=>{const t=dl(d);t.setDate(t.getDate()+1);return t.toLocaleDateString('en-CA');},pv=d=>{const t=dl(d);t.setDate(t.getDate()-1);return t.toLocaleDateString('en-CA');};
+ SALES.slice().sort((a,b)=>a.s<b.s?-1:1).forEach(x=>{if(cur<x.s)gaps.push({n:'Full price',s:cur,e:pv(x.s),k:'bau'});if(nx(x.e)>cur)cur=nx(x.e);});if(cur<='2025-12-31')gaps.push({n:'Full price',s:cur,e:'2025-12-31',k:'bau'});
+ return gaps.map((g,i,a)=>Object.assign(g,{n:a.length>1?(i===0?'Full price (before sales)':i===a.length-1?'Full price (after sales)':'Between sales'):'Full price'}));}
 function rail(){const s=dl('2025-10-01'),e=dl('2025-12-31'),span=(e-s)/864e5+1;const X=d=>((dl(d)-s)/864e5)/span*100,W=(a,b)=>X(b)-X(a)+100/span;
  const sd=D.filter(r=>saleOf(r.d)).length;
  const blk=(p,kind,top)=>{const a=agg(rng(p.s,p.e)),b=agg(rng(p.s,p.e),'py_');
   return `<button class="rail-blk ${kind}" data-ps="${p.s}" data-pe="${p.e}" data-pn="${esc(p.n)}" style="top:${top}px;left:${X(p.s)}%;width:calc(${W(p.s,p.e)}% - 2px);background:${KC(p.k)};${p.k==='bau'?'color:var(--ink)':''}" title="${esc(p.n)} · ${fds(p.s)} – ${fds(p.e)} · click for the period summary"><div class="nm">${esc(p.n)}</div><div class="dt">${kk(a.net)} · ${dcellTxt(delta(a.net,b.net))}</div></button>`;};
  // full-price gaps in the sale lane
- const gaps=[];let cur='2025-10-01';SALES.slice().sort((a,b)=>a.s<b.s?-1:1).forEach(x=>{if(cur<x.s){const pe=new Date(dl(x.s));pe.setDate(pe.getDate()-1);gaps.push({n:'Full price',s:cur,e:pe.toLocaleDateString('en-CA'),k:'bau'});}
-  const nx=new Date(dl(x.e));nx.setDate(nx.getDate()+1);cur=nx.toLocaleDateString('en-CA');});if(cur<='2025-12-31')gaps.push({n:'Full price',s:cur,e:'2025-12-31',k:'bau'});
+ const gaps=fullPriceGaps();
  const evs=PAY.events.map(e=>`<div class="rail-ev" style="left:${X(e.d)}%;border-color:${KC(e.k)}" title="${esc(e.n)} · ${fd(e.d)}">${({'Black Friday':'Black Friday','Thanksgiving (CA)':'Thanksgiving','Halloween':'Halloween','Boxing Day':'Boxing Day'})[e.n]||''}</div>`).join('');
  const ax=['2025-10-01','2025-10-15','2025-11-01','2025-11-15','2025-12-01','2025-12-15'].map(d=>`<i style="left:${X(d)}%">${fds(d)}</i>`).join('');
  return `<div class="rail"><div class="rail-h">Sale calendar <span class="badge">${sd} sale days</span><span class="tag">${92-sd} full price days</span><span class="s">Top lane: markdown windows from Klaviyo sends (outlined = full price). Bottom lane: trading periods. Click any block for its summary</span></div>
  <div class="rail-body"><div class="rail-track">${SALES.map(x=>blk(x,'sale',0)).join('')}${gaps.map(x=>blk(x,'nosale',0)).join('')}${PAY.periods.map(p=>blk(p,'per',40)).join('')}${evs}<div class="rail-ax">${ax}</div></div></div></div>`;}
-document.addEventListener('click',e=>{const b=e.target.closest('.rail-blk[data-ps],tr[data-ps]');if(b)openPeriod(b.dataset.ps,b.dataset.pe,b.dataset.pn);});
+document.addEventListener('click',e=>{const dr=e.target.closest('#mbody tr[data-d]');if(dr){openDay(dr.dataset.d);return;}const b=e.target.closest('.rail-blk[data-ps],tr[data-ps]');if(b)openPeriod(b.dataset.ps,b.dataset.pe,b.dataset.pn);});
 const dcellTxt=v=>!ok(v)?'—':(v>=0?'+':'')+(v*100).toFixed(0)+'% YoY';
 
 /* ---------- day modal ---------- */
@@ -304,14 +309,13 @@ function chanGroups(days){const o={};GROUPS.forEach(g=>o[g]={g,net:0,sess:0,ord:
  return GROUPS.map(g=>o[g]).filter(x=>x.sess>0||x.net>0).sort((a,b)=>b.net-a.net);}
 const GCOL=g=>g==='Other'?css('--py'):css('--s'+(GROUPS.indexOf(g)+1));
 const EST='<span class="muted" style="font-size:9px"> est.</span>';
-const HPV=(PAY.homepage||[]).filter(h=>h.slots).sort((a,b)=>a.d<b.d?-1:1),HPN=(PAY.homepage||[]).filter(h=>h.note);
+const HPV=(PAY.homepage||[]).filter(h=>h.slots).sort((a,b)=>a.d<b.d?-1:1),HPN=[];
 const hpFor=d=>{let v=null;HPV.forEach(h=>{if(h.d<=d)v=h;});return v;};
 const hpNext=v=>{const i=HPV.indexOf(v);return i>=0&&i<HPV.length-1?HPV[i+1].d:null;};
 const hpNotes=d=>{const v=hpFor(d);return HPN.filter(n=>n.d<=d&&(!v||n.d>=v.d));};
-function hpHTML(v,compact){if(!v)return '<div class="li">No homepage plan recorded</div>';const S=v.slots,C=v.copy||{};
- const three=(S['3UP']||[]).map(t=>'<b>'+esc(t)+'</b>').join(' · '),hd=[...new Set(Object.keys(C).sort().map(k=>C[k]).filter(Boolean))];
- const two=[1,2,3,4,5,6].map(i=>S['2UP_'+i]).filter(Boolean).map(esc).join(' · ');
- return `<div class="li"><span class="tag">3UP</span>${three||'—'}</div>${hd.length?`<div class="li"><span class="tag">Headlines</span>${hd.map(x=>'“'+esc(x)+'”').join(' · ')}</div>`:''}${two?`<div class="li"><span class="tag">2UP</span>${two}</div>`:''}${S['Release Component']?`<div class="li"><span class="tag">Release</span>${esc(S['Release Component'])}</div>`:''}${S['SITE STRIPE']?`<div class="li"><span class="tag">Site stripe</span>${esc(S['SITE STRIPE'])}</div>`:''}`;}
+function hpHTML(v){if(!v)return '<div class="li">No homepage plan recorded</div>';const S=v.slots;
+ const three=(S['3UP']||[]).map(esc).join(' · '),two=[1,2,3,4,5,6].map(i=>S['2UP_'+i]).filter(Boolean).map(esc).join(' · ');
+ return `<div class="li"><span class="tag">3UP</span>${three||'—'}</div>${two?`<div class="li"><span class="tag">2UP</span>${two}</div>`:''}`;}
 const hpShort=d=>{const v=hpFor(d);return v?(v.slots['3UP']||[]).join(' · '):'';};
 const HAS_COMMS=(PAY.comms||[]).length>0, HAS_CHAN=Object.keys(PAY.chan_daily||{}).length>0;
 function openDay(d){const r=DI[d];if(!r)return;const p=periodOf(d);
@@ -321,7 +325,7 @@ function openDay(d){const r=DI[d];if(!r)return;const p=periodOf(d);
   ['Orders (est.)',n0(r.orders),delta(r.orders,r.py_orders)],['AOV',m2(r.aov),delta(r.aov,r.py_aov)],['Gross sales',m0(r.gross),delta(r.gross,r.py_gross)],
   ['Returns',m0(r.ret),delta(r.ret,r.py_ret),1],['Discounts',m0(r.disc),delta(r.disc,r.py_disc),1],['Google spend',m0(r.g_cost),delta(r.g_cost,r.py_g_cost)],
   ['MER',r.g_cost?(r.net/r.g_cost).toFixed(1)+'x':'—',r.g_cost&&r.py_g_cost?delta(r.net/r.g_cost,r.py_net/r.py_g_cost):null],
-  ['Google conv.',n0(r.g_conv),delta(r.g_conv,r.py_g_conv)],['Organic clicks',n0(r.sc_clk),null]];
+  ['Google conv.',n0(r.g_conv),delta(r.g_conv,r.py_g_conv)],['Organic clicks',n0(r.sc_clk),null],...(HAS_FP?[['Markdown share',pc(ok(r.mkd)&&(r.fp+r.mkd)?r.mkd/(r.fp+r.mkd):null,0),null]]:[]),...(HAS_NC?[['New customers',n0(r.newc),null]]:[])];
  const dd=(v,inv)=>v==null||!ok(v)?'':`<div class="mdelta ${(inv?v<=0:v>=0)?'up':'down'}">${v>=0?'▲':'▼'} ${(Math.abs(v)*100).toFixed(0)}%</div>`;
  let h=`<div class="mgrid">${ks.map(([l,v,x,inv])=>`<div class="mk"><div class="l">${l}</div><div class="v">${v}</div>${dd(x,inv)}</div>`).join('')}</div>
  <div class="src" style="margin:-8px 0 10px">Changes are against the same date in 2024 (${m0(r.py_net)} net). Same weekday last year (${fd(r.wpyd)}): ${m0(r.wpy_net)} net, ${dcellTxt(delta(r.net,r.wpy_net)).replace(' YoY','')}.</div>`;
@@ -372,6 +376,7 @@ RENDER.ov=()=>{const a=agg(D),b=agg(D,'py_');
  <div class="legend"><span><i class="sw ln" style="background:var(--cy)"></i>2025 net sales</span><span><i class="sw dash"></i>2024 net sales</span></div>
  <div class="panel"><div class="chartbox"><canvas id="c-ov"></canvas></div></div></div>
  <div class="sec"><div class="sech"><h2>Trading periods</h2><span class="sub">Year on year by period</span></div><div id="ov-per"></div></div>
+ <div class="sec"><div class="sech"><h2>Full price vs markdown</h2><span class="sub">Net sales sold at full price against sold below regular price</span></div><div id="ov-fp"></div></div>
  <div class="sec"><div class="sech"><h2>What happened</h2><span class="sub">Read-outs from the data</span></div><div class="ins" id="ov-ins"></div></div>
  <div class="sec"><div class="sech"><h2>Biggest days</h2><span class="sub">Top eight days by net sales, with what launched</span></div><div id="ov-top"></div></div>`;
  const c=mk('c-ov',{type:'line',data:{labels:LABELS,datasets:[cyDs('2025',D.map(r=>r.net),{fill:{target:'origin'},backgroundColor:css('--cy')+'22'}),pyDs('2024',D.map(r=>r.py_net))]},
@@ -392,6 +397,15 @@ RENDER.ov=()=>{const a=agg(D),b=agg(D,'py_');
   ['Christmas peak moved earlier',`22–26 Dec delivered <b>${kk(xb.net)}</b> against ${kk(xbp.net)} in 2024. Last year the peak was 24 Dec (${kk(DI['2025-12-24'].py_net)}). This year it was 23 Dec (${kk(DI['2025-12-23'].net)}), and Christmas Day held at ${kk(DI['2025-12-25'].net)}. Boxing Week (24–31 Dec) finished ${dcellTxt(delta(agg(rng('2025-12-24','2025-12-31')).net,agg(rng('2025-12-24','2025-12-31'),'py_').net))}.`],
   ['Paid search scaled up',`Google Ads spend rose to <b>${kk(gc)}</b> (${dcellTxt(delta(gc,pgc))}), mostly from the new <i>shop_catchall_footwear</i> Shopping campaign (${kk(20013)}). Clicks rose ${dcellTxt(delta(gk,pgk)).replace(' YoY','')} and conversions ${dcellTxt(delta(gv,pgv)).replace(' YoY','')}, but site sessions fell, so paid traffic did not grow total traffic.`]];
  $('#ov-ins').innerHTML=ins.map(([h,p])=>`<div><h4>${h}</h4><p>${p}</p></div>`).join('');
+ if(!HAS_FP){$('#ov-fp').innerHTML=`<div class="note"><b>Data needed.</b> None of the files so far split sales by full price vs markdown. Shopify's "discounts" are discount codes only, not marked-down prices. A <b>product sales export by day</b> with each item's selling price and its regular (compare-at) price will populate this section: the daily split, the markdown share for every sale event, and a by-brand view. See Sources &amp; notes → Data still needed.</div>`;}
+ else{const fp=sum(D,'fp'),mkn=sum(D,'mkd'),pfp=sum(D,'py_fp'),pmk=sum(D,'py_mkd'),ON=D.filter(r=>saleOf(r.d)),OFF=D.filter(r=>!saleOf(r.d));const sh=rs=>{const a=sum(rs,'fp'),b=sum(rs,'mkd');return a+b?b/(a+b):null;};
+  $('#ov-fp').innerHTML=`<div class="kpis">${kpi('Full-price net',kk(fp),pfp?dsp(delta(fp,pfp)):'')}${kpi('Markdown net',kk(mkn),pmk?dsp(delta(mkn,pmk)):'')}${kpi('Markdown share',pc(mkn/(fp+mkn),1),pfp+pmk?'<span class="d">2024: '+pc(pmk/(pfp+pmk),1)+'</span>':'')}
+   ${kpi('Markdown share, sale days',pc(sh(ON),1),'<span class="d">'+ON.length+' days</span>')}${kpi('Markdown share, full-price days',pc(sh(OFF),1),'<span class="d">'+OFF.length+' days</span>')}${D.some(r=>ok(r.mkdu))?kpi('Markdown units',n0(sum(D,'mkdu')),'<span class="d">of '+n0(sum(D,'mkdu')+sum(D,'fpu'))+'</span>'):''}</div>
+   <div class="legend" style="margin-top:12px"><span><i class="sw" style="background:var(--s1)"></i>Full price</span><span><i class="sw" style="background:var(--s2)"></i>Markdown</span><span>Shaded background: sale days</span></div>
+   <div class="panel"><div class="chartbox"><canvas id="c-fp"></canvas></div></div>`;
+  const saleBg={id:'saleBg',beforeDatasetsDraw(c){const x=c.scales.x,ar=c.chartArea,ctx=c.ctx,w=(ar.right-ar.left)/D.length;ctx.save();ctx.fillStyle=css('--bf');ctx.globalAlpha=.08;D.forEach((r,i)=>{if(saleOf(r.d)){const px=x.getPixelForValue(i);ctx.fillRect(px-w/2,ar.top,w,ar.bottom-ar.top);}});ctx.restore();}};
+  mk('c-fp',{type:'bar',data:{labels:LABELS,datasets:[{label:'Full price',data:D.map(r=>r.fp),backgroundColor:css('--s1'),borderColor:css('--panel'),borderWidth:{top:2},borderRadius:0},{label:'Markdown',data:D.map(r=>r.mkd),backgroundColor:css('--s2'),borderRadius:0}]},plugins:[saleBg],
+   options:barOpts('money',false,{scales:{x:{stacked:true,grid:{display:false},ticks:{maxRotation:0,autoSkipPadding:14}},y:{stacked:true,grid:{color:css('--grid')},ticks:{callback:v=>kk(v)}}},onClick:(e,els)=>{if(els.length)openDay(D[els[0].index].d);},datasets:{bar:{maxBarThickness:12,categoryPercentage:.9,barPercentage:.95}}})});}
  table($('#ov-top'),[{k:'d',t:'Date',l:1,cls:'strong',f:r=>fd(r.d)},{k:'net',t:'Net sales',f:r=>m0(r.net)},{k:'py_net',t:'Same date 2024',f:r=>m0(r.py_net)},{k:'dy',t:'Δ',v:r=>delta(r.net,r.py_net),f:r=>dcell(delta(r.net,r.py_net))},
   {k:'sess',t:'Sessions',f:r=>n0(r.sess)},{k:'cvr',t:'CVR',f:r=>pc(r.cvr)},{k:'l',t:'Launches / calendar',l:1,cls:'wrap',f:r=>[...(EBYD[r.d]||[]).map(e=>'<b>'+esc(e.n)+'</b>'),...(LBYD[r.d]||[]).map(l=>esc(l.name))].join(' · ')||'—'}],best,{click:'d',onclick:openDay});};
 
@@ -410,7 +424,8 @@ RENDER.cal=()=>{const a=agg(D),b=agg(D,'py_'),gc=sum(D,'g_cost'),pgc=sum(D,'py_g
  <div class="ctlbox"><div class="chipgrp"><span class="gl">Metric</span><select id="cal-m" aria-label="Calendar metric">${Object.entries(CALM).map(([k,[l]])=>`<option value="${k}" ${k===CAL.m?'selected':''}>${l}</option>`).join('')}</select>
   <button class="chip ${CAL.yoy?'on':''}" data-t="yoy">Show YoY delta</button><button class="chip ${CAL.sale?'on':''}" data-t="sale">Highlight sale days</button><button class="chip ${CAL.saleEm?'on':''}" data-t="saleEm">Sale emails only</button><button class="chip ${CAL.ln?'on':''}" data-t="ln">Show launches</button></div></div>
  <div id="cal-grid"></div></div>
- <div class="sec"><div class="sech"><h2>Period summaries</h2><span class="sub">Sale windows and trading periods. Click a row for the full summary</span></div><div id="cal-per"></div></div>`;
+ <div class="sec"><div class="sech"><h2>Sale events at a glance</h2><span class="sub">Every markdown window, full-price stretch${MSG.length?', messaging event':''} and trading period. Click a row for the full summary</span></div>
+ <div class="ctl" id="cal-pf"><span class="gl">Show</span><button class="chip on" data-f="all">All</button><button class="chip" data-f="Sale">Sales</button><button class="chip" data-f="Not a sale">Not a sale</button><button class="chip" data-f="Period">Trading periods</button></div><div id="cal-per"></div></div>`;
  const draw=()=>{const [lab,fmt,pyk]=CALM[CAL.m];const vals=D.map(r=>calVal(r,CAL.m)).filter(ok),mx=Math.max(...vals,1),mn=Math.min(0,...vals);
   const heat=v=>{if(!ok(v))return 'transparent';const t=Math.max(0,Math.min(1,(v-mn)/(mx-mn||1)));return `color-mix(in oklab, ${css('--heat0')}, ${css(t<.5?'--heat1':'--heat2')} ${Math.round((t<.5?t*2:(t-.5)*2)*100)}%)`;};
   let h='';[['2025-10','October 2025'],['2025-11','November 2025'],['2025-12','December 2025']].forEach(([ym,ml])=>{const md=D.filter(r=>r.d.startsWith(ym)),ns=md.filter(r=>saleOf(r.d)).length;
@@ -432,25 +447,31 @@ RENDER.cal=()=>{const a=agg(D),b=agg(D,'py_'),gc=sum(D,'g_cost'),pgc=sum(D,'py_g
  $('#cal-m').onchange=e=>{CAL.m=e.target.value;draw();};
  $('#t-cal .ctlbox').addEventListener('click',e=>{const t=e.target.dataset.t;if(!t)return;CAL[t]=!CAL[t];e.target.classList.toggle('on',CAL[t]);draw();});
  draw();
- const blocks=[...SALES.map(x=>Object.assign({type:'Sale'},x)),...PAY.periods.map(x=>Object.assign({type:'Trading period'},x))].map(x=>{const rs=rng(x.s,x.e),A=agg(rs),B=agg(rs,'py_'),g=sum(rs,'g_cost'),em=(PAY.comms||[]).filter(c=>c.d>=x.s&&c.d<=x.e);
-  return Object.assign(x,{days:rs.length,net:A.net,dn:delta(A.net,B.net),sess:A.sess,cvr:A.cvr,aov:A.aov,ord:A.orders,g,mer:g?A.net/g:null,npd:A.net/rs.length,em:em.length,sem:em.filter(isSaleEmail).length,lc:PAY.launches.filter(l=>l.d>=x.s&&l.d<=x.e).length});});
- const pr=$('#cal-per');table(pr,[{k:'n',t:'Period',l:1,cls:'strong',f:x=>`<span class="pdot" style="background:${KC(x.k)}"></span>${esc(x.n)}`},{k:'type',t:'Type',l:1,f:x=>x.type==='Sale'?'<span class="salebadge">Sale</span>':'<span class="tag">Period</span>'},
-  {k:'s',t:'Dates',l:1,f:x=>fds(x.s)+' – '+fds(x.e)},{k:'days',t:'Days'},{k:'net',t:'Net sales',f:x=>m0(x.net)},{k:'dn',t:'vs 2024',f:x=>dcell(x.dn)},{k:'npd',t:'Net / day',f:x=>m0(x.npd)},{k:'sess',t:'Sessions',f:x=>n0(x.sess)},{k:'cvr',t:'CVR',f:x=>pc(x.cvr)},
-  {k:'aov',t:'AOV',f:x=>m2(x.aov)},{k:'g',t:'Google spend',f:x=>m0(x.g)},{k:'mer',t:'MER',f:x=>x.mer.toFixed(1)+'x'},{k:'em',t:'Emails',f:x=>x.em+(x.sem?` <span class="muted">(${x.sem} sale)</span>`:'')},{k:'lc',t:'Launches'}],blocks);
- // make rows clickable (table may be re-sorted, so match by text)
- pr.addEventListener('click',e=>{const tr=e.target.closest('tbody tr');if(!tr)return;const nm=tr.querySelector('td').textContent.trim();const x=blocks.find(b=>b.n===nm);if(x)openPeriod(x.s,x.e,x.n);});};
+ const mkb=(x,type)=>{const rs=rng(x.s,x.e),A=agg(rs),B=agg(rs,'py_'),g=sum(rs,'g_cost'),em=(PAY.comms||[]).filter(c=>c.d>=x.s&&c.d<=x.e),fp=sum(rs,'fp'),mk=sum(rs,'mkd');
+  return Object.assign({},x,{type,days:rs.length,net:A.net,py:B.net,dn:delta(A.net,B.net),sess:A.sess,cvr:A.cvr,pcvr:B.cvr,dc:ok(A.cvr)&&ok(B.cvr)?(A.cvr-B.cvr)*100:null,aov:A.aov,ord:A.orders,g,mer:g?A.net/g:null,npd:A.net/rs.length,
+   em:em.length,sem:em.filter(isSaleEmail).length,nc:HAS_NC?sum(rs,'newc'):null,mkdsh:HAS_FP&&(fp+mk)?mk/(fp+mk):null});};
+ const blocks=[...SALES.map(x=>mkb(x,'Sale')),...MSG.map(x=>mkb(x,'Not a sale')),...fullPriceGaps().map(x=>mkb(x,'Not a sale')),...PAY.periods.map(x=>mkb(x,'Period'))].sort((a,b)=>a.type==='Period'&&b.type!=='Period'?1:b.type==='Period'&&a.type!=='Period'?-1:a.s<b.s?-1:a.s>b.s?1:0);
+ const badge=x=>x.type==='Sale'?'<span class="salebadge">Sale</span>':x.type==='Period'?'<span class="tag">Period</span>':'<span class="tag">Not a sale</span>';
+ const cols=[{k:'n',t:'Event',l:1,cls:'strong',f:x=>`<span class="pdot" style="background:${x.type==='Not a sale'?'transparent;border:1px solid var(--ink3)':KC(x.k)}"></span>${esc(x.n)}<br><span class="muted" style="font-size:11px;font-weight:400">${fd(x.s)} – ${fd(x.e)}${x.depth?' · '+esc(x.depth):''}</span>`},{k:'type',t:'',l:1,f:badge},
+  {k:'days',t:'Days'},{k:'net',t:'Net sales',f:x=>m0(x.net)},{k:'py',t:'2024',f:x=>m0(x.py)},{k:'dn',t:'YoY',f:x=>dcell(x.dn)},{k:'cvr',t:'CVR',f:x=>pc(x.cvr)},{k:'pcvr',t:'PY CVR',f:x=>pc(x.pcvr)},
+  {k:'dc',t:'Δ CVR',f:x=>ok(x.dc)?`<span class="${x.dc>=0?'up':'down'}">${x.dc>=0?'+':''}${x.dc.toFixed(2)} pts</span>`:'—'},{k:'ord',t:'Orders',f:x=>n0(x.ord)},{k:'aov',t:'AOV',f:x=>m2(x.aov)},{k:'npd',t:'Net / day',f:x=>m0(x.npd)},
+  {k:'mer',t:'MER',f:x=>ok(x.mer)?x.mer.toFixed(1)+'x':'—'},...(HAS_NC?[{k:'nc',t:'New cust.',f:x=>n0(x.nc)}]:[]),...(HAS_FP?[{k:'mkdsh',t:'Markdown share',f:x=>pc(x.mkdsh,0)}]:[]),{k:'em',t:'Emails',f:x=>x.em+(x.sem?` <span class="muted">(${x.sem} sale)</span>`:'')}];
+ const pr=$('#cal-per');let flt='all';const drawP=()=>table(pr,cols,blocks.filter(x=>flt==='all'||x.type===flt),{rowcls:x=>x.type==='Sale'?'sl':''});drawP();
+ $('#cal-pf').onclick=e=>{const f=e.target.dataset.f;if(!f)return;flt=f;$('#cal-pf').querySelectorAll('.chip').forEach(c=>c.classList.toggle('on',c.dataset.f===f));drawP();};
+ pr.addEventListener('click',e=>{const tr=e.target.closest('tbody tr');if(!tr)return;const nm=tr.querySelector('td').firstChild.textContent.trim()||tr.querySelector('td').textContent.trim();const x=blocks.find(b=>tr.querySelector('td').textContent.startsWith(b.n));if(x)openPeriod(x.s,x.e,x.n);});};
 
 /* ---------- period summary modal ---------- */
 function openPeriod(s0,e0,name){const rs=rng(s0,e0),A=agg(rs),B=agg(rs,'py_'),g=sum(rs,'g_cost'),pg=sum(rs,'py_g_cost');
- const sl=SALES.find(x=>x.s===s0&&x.e===e0),per=PAY.periods.find(x=>x.s===s0&&x.e===e0);const sd=rs.filter(r=>saleOf(r.d)).length;
+ const sl=SALES.find(x=>x.s===s0&&x.e===e0),ms=MSG.find(x=>x.s===s0&&x.e===e0),per=PAY.periods.find(x=>x.s===s0&&x.e===e0);const sd=rs.filter(r=>saleOf(r.d)).length;
  const em=(PAY.comms||[]).filter(c=>c.d>=s0&&c.d<=e0),sem=em.filter(isSaleEmail),L=PAY.launches.filter(l=>l.d>=s0&&l.d<=e0);
- $('#mtitle').textContent=(sl?'Sale: ':per?'Trading period: ':'Full price: ')+name;
+ $('#mtitle').textContent=name;
  const mkk=(l,v,dd)=>`<div class="mk"><div class="l">${l}</div><div class="v">${v}</div>${dd||''}</div>`;
  const dd=(v,inv)=>!ok(v)?'':`<div class="mdelta ${(inv?v<=0:v>=0)?'up':'down'}">${v>=0?'▲':'▼'} ${(Math.abs(v)*100).toFixed(0)}% YoY</div>`;
- let h=`<div class="note"><b>${sl?'Markdown event':sd===rs.length?'All days on sale':sd?sd+' of '+rs.length+' days on sale':'Full price, no markdown'}</b> · ${fd(s0)} to ${fd(e0)} (${rs.length} days)${sl?'<br><span class="muted">Source: '+esc(sl.src)+'</span>':''}</div>
+ const ev=sl||ms;let h=`<div class="note"><b>${sl?'Markdown event':ms?'Messaging only, not a markdown':per?(sd===rs.length?'Trading period · all days on sale':sd?'Trading period · '+sd+' of '+rs.length+' days on sale':'Trading period · full price'):'Full price, no markdown'}</b> · ${fd(s0)} to ${fd(e0)} (${rs.length} day${rs.length>1?'s':''})${ev&&ev.depth?' · '+esc(ev.depth):''}${ev&&ev.scope?' · '+esc(ev.scope):''}${ev?'<br><span class="muted">Source: '+esc(ev.src)+'</span>':''}</div>
  <div class="mgrid">${mkk('Net sales',m0(A.net),dd(delta(A.net,B.net)))}${mkk('2024 same dates',m0(B.net))}${mkk('Sessions',n0(A.sess),dd(delta(A.sess,B.sess)))}${mkk('Conversion rate',pc(A.cvr),dd(delta(A.cvr,B.cvr)))}
  ${mkk('PY conversion',pc(B.cvr))}${mkk('Orders (est.)',n0(A.orders),dd(delta(A.orders,B.orders)))}${mkk('AOV',m2(A.aov),dd(delta(A.aov,B.aov)))}${mkk('Google spend',m0(g),dd(delta(g,pg)))}
- ${mkk('MER',g?(A.net/g).toFixed(1)+'x':'—',dd(delta(A.net/g,B.net/pg)))}${mkk('Net sales per day',m0(A.net/rs.length))}${mkk('Returns',m0(A.ret),dd(delta(A.ret,B.ret),1))}${mkk('Emails sent',em.length)}${mkk('Launches',L.length)}${mkk('Share of Q4 net',pc(A.net/agg(D).net,1))}</div>`;
+ ${mkk('MER',g?(A.net/g).toFixed(1)+'x':'—',dd(delta(A.net/g,B.net/pg)))}${mkk('Net sales per day',m0(A.net/rs.length))}${mkk('Returns',m0(A.ret),dd(delta(A.ret,B.ret),1))}${mkk('New customers',HAS_NC?n0(sum(rs,'newc')):'—',HAS_NC?dd(null):'<div class="mdelta muted">needs data</div>')}${mkk('Emails sent',em.length)}${mkk('Launches',L.length)}${mkk('Share of Q4 net',pc(A.net/agg(D).net,1))}</div>`;
+ {const fp=sum(rs,'fp'),mk=sum(rs,'mkd'),pfp=sum(rs,'py_fp'),pmk=sum(rs,'py_mkd');h+=`<div class="blk"><h4>Full price vs markdown</h4>`+(HAS_FP?`<div class="nvrsplit" role="img" aria-label="Full price ${pc(fp/(fp+mk),0)}, markdown ${pc(mk/(fp+mk),0)}"><div class="a" style="flex:${fp||0.001}">FULL PRICE ${pc(fp/(fp+mk),0)} · ${kk(fp)}</div><div class="b" style="flex:${mk||0.001}">MARKDOWN ${pc(mk/(fp+mk),0)} · ${kk(mk)}</div></div>${pfp+pmk?`<div class="src">2024 same dates: ${pc(pmk/(pfp+pmk),0)} markdown (${kk(pmk)} of ${kk(pfp+pmk)}).</div>`:''}`:'<div class="li muted">Needs <code>full_price_vs_markdown_daily.csv</code>. See Sources &amp; notes → Data still needed.</div>')+`</div>`;}
  const best=rs.slice().sort((x,y)=>y.net-x.net).slice(0,3),worst=rs.slice().sort((x,y)=>x.net-y.net).slice(0,2);
  h+=`<div class="blk"><h4>Best and weakest days</h4>${best.map(r=>`<div class="li"><b>${fd(r.d)}</b> · ${m0(r.net)} <span class="muted">(${dcellTxt(delta(r.net,r.py_net))})</span>${(LBYD[r.d]||[]).length?' · '+(LBYD[r.d]).map(l=>esc(l.name)).join(', '):''}</div>`).join('')}${worst.map(r=>`<div class="li muted">Weakest: ${fd(r.d)} · ${m0(r.net)}</div>`).join('')}</div>`;
  h+=`<div class="blk"><h4>Sale emails sent during this period (${sem.length} of ${em.length})</h4>${sem.length?sem.map(c=>`<div class="li"><span class="tag">Email</span><span class="salebadge">Sale</span> <b>${esc(c.subj)}</b><br><span class="muted" style="font-size:12px">${fd(c.d)} ${esc(c.t)} · ${n0(c.rcpt)} sent · open ${pc(c.open,1)} · click ${pc(c.click,2)}</span></div>`).join(''):'<div class="li">No sale emails in this period</div>'}</div>`;
@@ -460,6 +481,7 @@ function openPeriod(s0,e0,name){const rs=rng(s0,e0),A=agg(rs),B=agg(rs,'py_'),g=
  h+=`<div class="blk"><h4>Launches (${L.length})</h4>${L.length?`<div class="li">${L.map(l=>`<b>${fds(l.d)}</b> ${esc(l.name)}`).join(' · ')}</div>`:'<div class="li">None</div>'}</div>`;
  if(HAS_CHAN){const rows=chanGroups(rs),T=rows.reduce((a,x)=>a+x.net,0);
   h+=`<div class="blk"><h4>Channel contribution</h4><div class="tw" style="max-height:none"><table><thead><tr><th class="l">Channel</th><th>Net sales${EST}</th><th>Share</th><th>Sessions</th><th>Orders${EST}</th><th>CVR${EST}</th></tr></thead><tbody>${rows.map(x=>`<tr><td class="l strong"><span class="pdot" style="background:${GCOL(x.g)}"></span>${esc(x.g)}</td><td>${m0(x.net)}</td><td>${pc(T?x.net/T:null,1)}</td><td>${n0(x.sess)}</td><td>${n0(x.ord)}</td><td>${pc(x.sess?x.ord/x.sess:null)}</td></tr>`).join('')}</tbody></table></div><div class="src">Estimated the same way as the day pop-up.</div></div>`;}
+ h+=`<div class="blk"><h4>Day by day</h4><div class="tw" style="max-height:none"><table><thead><tr><th class="l">Date</th><th>Net sales</th><th>YoY</th><th>Sessions</th><th>CVR</th><th>Orders</th><th>AOV</th><th>MER</th>${HAS_FP?'<th>Markdown</th>':''}${HAS_NC?'<th>New cust.</th>':''}<th>Emails</th><th class="l">Homepage</th></tr></thead><tbody>${rs.map(r=>`<tr data-d="${r.d}" style="cursor:pointer"><td class="l strong">${fd(r.d)}${saleOf(r.d)?' <span class="salebadge" style="font-size:8px">Sale</span>':''}</td><td>${m0(r.net)}</td><td>${dcell(delta(r.net,r.py_net))}</td><td>${n0(r.sess)}</td><td>${pc(r.cvr)}</td><td>${n0(r.orders)}</td><td>${m2(r.aov)}</td><td>${r.g_cost?(r.net/r.g_cost).toFixed(1)+'x':'—'}</td>${HAS_FP?`<td>${pc(ok(r.mkd)&&(r.fp+r.mkd)?r.mkd/(r.fp+r.mkd):null,0)}</td>`:''}${HAS_NC?`<td>${n0(r.newc)}</td>`:''}<td>${(CBYD[r.d]||[]).length||''}</td><td class="l" style="font-size:11.5px">${hpFor(r.d)&&hpFor(r.d).d===r.d?'<span class="badge">New</span> ':''}${esc(hpShort(r.d))}</td></tr>`).join('')}</tbody></table></div><div class="src">Click a day for its full detail.</div></div>`;
  $('#mbody').innerHTML=h;$('#mask').classList.add('on');$('#mx').focus();}
 
 /* ---- Performance ---- */
@@ -606,13 +628,21 @@ RENDER.nvr=()=>{const G=GROUPS.map(g=>SHG[g]).filter(x=>x.n&&x.newo+x.reto>0),NO
 
 /* ---- Products ---- */
 RENDER.prod=()=>{const B=PAY.brands.slice(0,15),P=PAY.products;
- $('#t-prod').innerHTML=`<div class="sec"><div class="sech"><h2>Brand demand</h2><span class="sub">GA4 product page views summed by brand · ${n0(P.length)} top product pages</span></div>
+ $('#t-prod').innerHTML=`${PAY.psales?`<div class="sec"><div class="sech"><h2>Product sales</h2><span class="sub">Shopify product sales · ${n0(PAY.psales.rows)} rows${PAY.psales.split?' · markdown = sold below regular price':''}</span></div>
+ <div class="two"><div><div class="legend"><span>Net sales by brand${PAY.psales.split?' · <i class="sw" style="background:var(--s1)"></i>full price <i class="sw" style="background:var(--s2)"></i>markdown':''}</span></div><div class="panel"><div class="chartbox" style="height:440px"><canvas id="c-psb"></canvas></div></div></div>
+ <div><div class="legend"><span>Net sales by product type</span></div><div class="panel"><div class="chartbox" style="height:440px"><canvas id="c-pst"></canvas></div></div></div></div>
+ <div class="sech" style="margin-top:12px"><h2 style="font-size:15px">Product ledger</h2><span class="sub">Top 500 products by net sales. Search and sort</span></div>
+ <div class="ctl"><input type="text" id="psq" placeholder="Search products or brands" style="min-width:260px"></div><div id="ps-t"></div></div>`:''}<div class="sec"><div class="sech"><h2>Brand demand</h2><span class="sub">GA4 product page views summed by brand · ${n0(P.length)} top product pages</span></div>
  <div class="two"><div class="panel"><div class="chartbox" style="height:460px"><canvas id="c-bv"></canvas></div></div><div class="panel"><div class="chartbox" style="height:460px"><canvas id="c-bk"></canvas></div></div></div>
  <div class="src">Left: product page views. Right: key events per 100 views (intent), brands with 5,000+ views.</div></div>
  <div class="note">ASICS was the most-viewed brand on site (${n0(B[0].v)} PDP views), ahead of Nike. Jordan converts attention best: ${pc(PAY.brands.find(b=>b.b==='Jordan').ke/PAY.brands.find(b=>b.b==='Jordan').v,1)} key events per view against ${pc(PAY.brands.find(b=>b.b==='ASICS').ke/PAY.brands.find(b=>b.b==='ASICS').v,1)} for ASICS. This is driven by launch-day demand on AJ1, AJ4, AJ11 and the Travis Scott Jumpman Jack.</div>
  <div class="sec"><div class="sech"><h2>Site sections</h2><span class="sub">Top non-product pages by views</span></div><div id="kp-t"></div></div>
  <div class="sec"><div class="sech"><h2>Product page ledger</h2><span class="sub">Search and sort</span></div>
  <div class="ctl"><input type="text" id="pq" placeholder="Search products" style="min-width:260px"><select id="pb"><option value="">All brands</option>${PAY.brands.map(b=>`<option>${esc(b.b)}</option>`).join('')}</select></div><div id="p-t"></div></div>`;
+ if(PAY.psales){const PS=PAY.psales,bb=PS.brands.slice(0,15),tt=PS.types.slice(0,15),stk=(xs,id)=>mk(id,{type:'bar',data:{labels:xs.map(x=>x.k),datasets:PS.split?[{label:'Full price',data:xs.map(x=>x.net-x.mkd),backgroundColor:css('--s1'),borderColor:css('--panel'),borderWidth:{right:2},borderRadius:0},{label:'Markdown',data:xs.map(x=>x.mkd),backgroundColor:css('--s2'),borderRadius:0}]:[{label:'Net sales',data:xs.map(x=>x.net),backgroundColor:css('--cy')}]},
+  options:barOpts('money',true,{scales:{y:{stacked:true,grid:{display:false}},x:{stacked:true,grid:{color:css('--grid')},ticks:{callback:v=>kk(v)}}}})});stk(bb,'c-psb');stk(tt,'c-pst');
+  const cols=[{k:'k',t:'Product',l:1,cls:'wrap'},{k:'b',t:'Brand',l:1},{k:'t',t:'Type',l:1},{k:'units',t:'Units',f:x=>n0(x.units)},{k:'net',t:'Net sales',f:x=>m0(x.net)},...(PS.split?[{k:'ms',t:'Markdown share',v:x=>x.net?x.mkd/x.net:null,f:x=>pc(x.net?x.mkd/x.net:null,0)}]:[])];
+  const dr=q=>table($('#ps-t'),cols,PS.products.filter(x=>!q||(x.k+' '+x.b+' '+x.t).toLowerCase().includes(q)),{h:520});dr('');$('#psq').oninput=e=>dr(e.target.value.toLowerCase().trim());}
  mk('c-bv',{type:'bar',data:{labels:B.map(b=>b.b),datasets:[{label:'PDP views',data:B.map(b=>b.v),backgroundColor:css('--cy')}]},options:barOpts('num',true)});
  const K=PAY.brands.filter(b=>b.v>=5000).map(b=>({b:b.b,v:b.ke/b.v*100})).sort((a,b)=>b.v-a.v);
  mk('c-bk',{type:'bar',data:{labels:K.map(b=>b.b),datasets:[{label:'Key events per 100 views',data:K.map(b=>b.v),backgroundColor:css('--cy')}]},options:barOpts('num',true,{plugins:{tooltip:{callbacks:{label:c=>' '+c.raw.toFixed(1)+' key events per 100 views'}}},scales:{y:{grid:{display:false}},x:{beginAtZero:true,grid:{color:css('--grid')}}}})});
@@ -684,9 +714,17 @@ RENDER.notes=()=>{$('#t-notes').innerHTML=`<div class="sec"><div class="sech"><h
  <div><h4>GA4</h4><p>User acquisition by first-user channel (users, key events, revenue, transactions) and pages and screens by title (views, users, key events). GA4 revenue (${kk(PAY.ga_total.rev)}) is gross and differs from Shopify net sales by design.</p></div>
  <div><h4>Release calendar</h4><p>${PAY.launches.length} launches transcribed from the launch calendar screenshots. Each launch is matched to its GA4 product page by name, and ${PAY.launches.filter(l=>l.match).length} matched. Lines truncated in the screenshot (e.g. "Show all (4)" on 10 Oct) may be incomplete.</p></div>
  <div><h4>Klaviyo campaigns</h4><p>${(PAY.comms||[]).length} email campaigns sent 1 Oct – 31 Dec 2025: recipients, open and click rates, active on site, unsubscribes. The export has no revenue column. Sale dates on the timeline (early Black Friday 13 Nov, 70% off 25 Nov, last chance 2 Dec, Boxing Week 24 Dec) come from these sends.</p></div>
- <div><h4>Content master (homepage)</h4><p>${(PAY.homepage||[]).length} homepage plans from the LS 25 sheet: 3UP and 2UP tiles, release component and banners. Each version is treated as live from its date until the next one. Slots marked "same" carry over from the previous version.</p></div>
+ <div><h4>Content master (homepage)</h4><p>${(PAY.homepage||[]).length} homepage plans from the LS 25 sheet: 3UP and 2UP tiles. Each version is treated as live from its date until the next one. Slots marked "same" carry over from the previous version.</p></div>
  <div><h4>Shopify channel performance</h4><p>Sessions, sales, orders, conversion rate, AOV and new vs returning orders by referring platform, for the whole quarter (last click). Used for the Shopify channel section and to calibrate the daily channel estimates.</p></div>
  <div><h4>Brand performance report</h4><p>The YouTube/Display brand performance export contained no data (all nulls), so it is not charted.</p></div></div></div>
+ <div class="sec"><div class="sech"><h2>Data still needed</h2><span class="sub">Each section switches on when its file is added to raw/ and the page is rebuilt. Templates are in templates/</span></div>
+ <div class="tw"><table><thead><tr><th class="l">File</th><th class="l">Status</th><th class="l">Unlocks</th><th class="l">Where to get it</th></tr></thead><tbody>
+ <tr><td class="l strong">product_sales_daily.csv</td><td class="l">${HAS_FP?'<span class="up">Loaded</span>':'<span class="down">Missing</span>'}</td><td class="l wrap">Full price vs markdown (daily, per sale event, by brand)</td><td class="l wrap">Shopify Analytics → "Sales by product variant" by day, with product vendor, product type, quantity, gross sales, discounts, returns, net sales, and the variant's price and compare-at price</td></tr>
+ <tr><td class="l strong">promo_calendar.csv</td><td class="l">${MSG.length||SALES.some(x=>/^Promo calendar/.test(x.src))?'<span class="up">Loaded</span>':'<span class="muted">Using Klaviyo-inferred dates</span>'}</td><td class="l wrap">Exact sale events (name, start, end, sale or messaging only, depth, scope)</td><td class="l wrap">Your promo / trading calendar</td></tr>
+ <tr><td class="l strong">customer_type_daily.csv</td><td class="l">${HAS_NC?'<span class="up">Loaded</span>':'<span class="down">Missing</span>'}</td><td class="l wrap">New customers per day and per event</td><td class="l wrap">Shopify "Sales over time" by day, broken down by customer type</td></tr>
+ <tr><td class="l strong">Meta / other paid spend by day</td><td class="l"><span class="muted">Optional</span></td><td class="l wrap">Blended MER (currently Google only)</td><td class="l wrap">Meta Ads Manager daily export</td></tr>
+ <tr><td class="l strong">Klaviyo revenue</td><td class="l"><span class="muted">Optional</span></td><td class="l wrap">Attributed revenue per email</td><td class="l wrap">Klaviyo campaign export with "Placed Order" value</td></tr>
+ </tbody></table></div></div>
  <div class="sec"><div class="sech"><h2>Caveats</h2></div>
  <div class="note">Trading periods are analytical windows. Sale moments on the timeline are inferred from Klaviyo send dates and subject lines, not from a promo calendar. Edit <code>periods</code> and <code>events</code> in <code>build/build_data.py</code> to change them. The same-date YoY puts Black Friday 2025 (28 Nov) against US Thanksgiving 2024. Use the "same weekday" comparison on the Performance tab, or the BFCM tab, for event-aligned reads.</div></div>`;};
 

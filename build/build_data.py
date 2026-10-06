@@ -233,9 +233,10 @@ with open(os.path.join(HERE, 'launches.csv'), newline='') as f:
 # Drop exports at raw/klaviyo_campaigns.csv and raw/ga4/channel_daily.csv and rebuild;
 # the calendar day pop-up lists them. Column names are matched loosely.
 def pick(row, *names):
-    low = {k.strip().lower(): v for k, v in row.items() if k}
+    low = {k.strip().lower().replace('_', ' '): v for k, v in row.items() if k}
     for n in names:
-        if n in low and str(low[n]).strip() != '':
+        n = n.replace('_', ' ')
+        if n in low and low[n] is not None and str(low[n]).strip() != '':
             return low[n]
     return None
 
@@ -399,7 +400,87 @@ sales = [
          src='Klaviyo: "Boxing Week is Here!" (24 Dec), "Boxing Week Continues!" (29 Dec). End date not stated; runs to the end of the data'),
 ]
 
-out = dict(homepage=homepage, shop_ch=shop_ch, sales=sales, comms=comms, chan_daily=chan_daily, daily=daily, ads=ads, gsc=gsc, channels=channels, products=products[:300], brands=brands,
+
+# Optional: real promo calendar replaces the inferred windows (templates/promo_calendar.csv)
+promos_msg = []
+pc_path = os.path.join(RAW, 'promo_calendar.csv')
+if os.path.exists(pc_path):
+    sales = []
+    for r in read_csv(pc_path):
+        if not r.get('name') or not r.get('start'):
+            continue
+        nm = r['name'].strip()
+        k = 'box' if re.search(r'boxing', nm, re.I) else 'bf' if re.search(r'black|cyber|bf', nm, re.I) else 'gift' if re.search(r'gift|holiday', nm, re.I) else 'mkt'
+        row = dict(n=nm, s=r['start'].strip(), e=(r.get('end') or r['start']).strip(), k=k, depth=(r.get('depth') or '').strip(),
+                   scope=(r.get('scope') or '').strip(), src='Promo calendar' + (': ' + r['source'].strip() if r.get('source') else ''))
+        (sales if (r.get('type') or 'sale').strip().lower() == 'sale' else promos_msg).append(row)
+
+# Optional: full price vs markdown by day
+fp_path = os.path.join(RAW, 'full_price_vs_markdown_daily.csv')
+if os.path.exists(fp_path):
+    for r in read_csv(fp_path):
+        x = DI.get(to_date(pick(r, 'date', 'day')))
+        if x and num(pick(r, 'full price net')) is not None:
+            x.update(fp=num(pick(r, 'full price net')), mkd=num(pick(r, 'markdown net')), fpu=num(pick(r, 'full price units')),
+                     mkdu=num(pick(r, 'markdown units')), py_fp=num(pick(r, 'py full price net')), py_mkd=num(pick(r, 'py markdown net')))
+
+# Optional: product sales by day (Shopify "Sales by product variant" or ERP export).
+# Markdown = sold below the regular price: compare-at price > selling price, or an explicit markdown/on-sale flag.
+psales = None
+ps_path = os.path.join(RAW, 'product_sales_daily.csv')
+if os.path.exists(ps_path):
+    rows_ps = read_csv(ps_path)
+    by_day, by_b, by_t, by_p = {}, {}, {}, {}
+    can_split = False
+    for r in rows_ps:
+        d = to_date(pick(r, 'date', 'day'))
+        if not d or d not in DI:
+            continue
+        net = num(pick(r, 'net sales', 'net_sales', 'total sales')) or 0
+        qty = num(pick(r, 'net quantity', 'quantity', 'net items sold', 'units', 'quantity ordered')) or 0
+        price = num(pick(r, 'product variant price', 'price', 'selling price', 'unit price'))
+        cmp_ = num(pick(r, 'product variant compare at price', 'compare at price', 'compare_at_price', 'regular price', 'original price'))
+        flag = (pick(r, 'markdown', 'on sale', 'is_markdown', 'sale flag') or '').strip().lower()
+        if flag:
+            mkd = flag in ('1', 'y', 'yes', 'true', 'markdown', 'mkd', 'sale')
+            can_split = True
+        elif cmp_ is not None and price is not None:
+            mkd = cmp_ > price + 0.005
+            can_split = True
+        else:
+            mkd = None
+        brand = (pick(r, 'product vendor', 'vendor', 'brand') or 'Unknown').strip()
+        ptype = (pick(r, 'product type', 'category', 'type') or 'Unknown').strip()
+        title = (pick(r, 'product title', 'product', 'product name') or '').strip()
+        disc = num(pick(r, 'discounts')) or 0
+        day = by_day.setdefault(d, dict(fp=0, mkd=0, fpu=0, mkdu=0))
+        if mkd is not None:
+            day['mkd' if mkd else 'fp'] += net
+            day['mkdu' if mkd else 'fpu'] += qty
+        for key, store in ((brand, by_b), (ptype, by_t), (title, by_p)):
+            o = store.setdefault(key, dict(k=key, net=0, units=0, mkd=0, disc=0, b=brand, t=ptype))
+            o['net'] += net; o['units'] += qty; o['disc'] += -abs(disc) if disc > 0 else disc
+            if mkd:
+                o['mkd'] += net
+    if can_split and not os.path.exists(fp_path):
+        for d, v in by_day.items():
+            DI[d].update(fp=round(v['fp'], 2), mkd=round(v['mkd'], 2), fpu=v['fpu'], mkdu=v['mkdu'])
+    rnd = lambda xs, n: [dict(o, net=round(o['net'], 2), mkd=round(o['mkd'], 2)) for o in sorted(xs, key=lambda o: -o['net'])[:n]]
+    psales = dict(split=can_split, rows=len(rows_ps), brands=rnd(by_b.values(), 60), types=rnd(by_t.values(), 40), products=rnd(by_p.values(), 500))
+
+# Optional: Shopify sales over time by customer type, by day
+ct_path = os.path.join(RAW, 'customer_type_daily.csv')
+if os.path.exists(ct_path):
+    for r in read_csv(ct_path):
+        x = DI.get(to_date(pick(r, 'date', 'day')))
+        t = (pick(r, 'customer_type', 'customer type') or '').lower()
+        if not x or not t:
+            continue
+        pre = 'newc' if t.startswith('new') or t.startswith('first') else 'retc'
+        x[pre] = num(pick(r, 'orders'))
+        x[pre + '_net'] = num(pick(r, 'net_sales', 'net sales'))
+
+out = dict(psales=psales, promos_msg=promos_msg, homepage=homepage, shop_ch=shop_ch, sales=sales, comms=comms, chan_daily=chan_daily, daily=daily, ads=ads, gsc=gsc, channels=channels, products=products[:300], brands=brands,
            keypages=keypages, launches=launches, events=events, periods=periods,
            ga_total=dict(rev=1574189.30, tx=8000, users=360925, newu=366398, views=2366985))
 with open(OUT, 'w') as f:
