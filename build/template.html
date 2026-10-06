@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="en-CA"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Livestock Q4 2025 Holiday</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{
+ color-scheme:dark;
+ --bg:#000;--panel:#0d0d0d;--panel2:#151515;--line:#262626;--line2:#333;--grid:#1f1f1e;
+ --ink:#fff;--ink2:#c3c2b7;--ink3:#898781;
+ --acc:#f2efe6;--acc-dim:rgba(242,239,230,.12);--acc-ink:#000;
+ --cy:#3987e5;--py:#6b6a66;--pos:#0ca30c;--neg:#e66767;
+ --s1:#3987e5;--s2:#d95926;--s3:#199e70;--s4:#c98500;--s5:#d55181;--s6:#008300;--s7:#9085e9;--s8:#e66767;
+ --bf:#d95926;--box:#9085e9;--gift:#199e70;--hol:#d55181;--bau:#3a3a38;--mkt:#c98500;--launch:#3987e5;
+ --heat0:#0f1a2b;--heat1:#1c5cab;--heat2:#5598e7;
+}
+:root[data-theme="light"]{
+ color-scheme:light;
+ --bg:#f9f9f7;--panel:#fcfcfb;--panel2:#f2f1ed;--line:#e1e0d9;--line2:#c3c2b7;--grid:#ecebe6;
+ --ink:#0b0b0b;--ink2:#52514e;--ink3:#77756f;
+ --acc:#0b0b0b;--acc-dim:rgba(11,11,11,.07);--acc-ink:#fff;
+ --cy:#2a78d6;--py:#a8a69f;--pos:#006300;--neg:#d03b3b;
+ --s1:#2a78d6;--s2:#eb6834;--s3:#1baf7a;--s4:#eda100;--s5:#e87ba4;--s6:#008300;--s7:#4a3aa7;--s8:#e34948;
+ --bf:#eb6834;--box:#4a3aa7;--gift:#1baf7a;--hol:#e87ba4;--bau:#d6d4cc;--mkt:#eda100;--launch:#2a78d6;
+ --heat0:#eef4fc;--heat1:#86b6ef;--heat2:#256abf;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:'Barlow',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+h1,h2,h3,h4,.cond{font-family:'Barlow Condensed','Barlow',sans-serif;text-transform:uppercase;letter-spacing:.045em;font-weight:600;margin:0}
+a{color:var(--ink)}
+header{position:sticky;top:0;z-index:60;background:var(--bg);border-bottom:1px solid var(--line)}
+.hbar{display:flex;align-items:center;gap:18px;padding:14px 22px 10px}
+.logo{font-family:'Barlow Condensed';font-weight:700;font-size:28px;letter-spacing:.02em;line-height:1;border:2px solid var(--ink);padding:3px 8px 2px;text-transform:uppercase}
+.htitle .eyebrow{font-family:'Barlow Condensed';font-size:11px;letter-spacing:.24em;color:var(--ink3);text-transform:uppercase;display:block;margin-bottom:4px}
+.htitle h1{font-size:25px;line-height:1}
+.hmeta{margin-left:auto;text-align:right;font-size:11px;color:var(--ink3);font-family:'Barlow Condensed';letter-spacing:.1em;text-transform:uppercase;line-height:1.7}
+.themebtn{background:none;border:1px solid var(--line2);color:var(--ink2);font-family:'Barlow Condensed';letter-spacing:.12em;text-transform:uppercase;font-size:11px;padding:5px 9px;cursor:pointer;margin-top:3px}
+nav{display:flex;overflow-x:auto;padding:0 22px;scrollbar-width:thin}
+nav button{background:none;border:0;border-bottom:3px solid transparent;color:var(--ink3);font-family:'Barlow Condensed';font-size:14px;letter-spacing:.11em;text-transform:uppercase;font-weight:600;padding:11px 14px;cursor:pointer;white-space:nowrap}
+nav button:hover{color:var(--ink2)}
+nav button.on{color:var(--ink);border-bottom-color:var(--ink)}
+button:focus-visible{outline:2px solid var(--cy);outline-offset:-2px}
+main{padding:22px;max-width:1880px;margin:0 auto}
+.tab{display:none}.tab.on{display:block}
+.sec{margin-bottom:30px}
+.sech{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 12px;border-bottom:1px solid var(--line);padding-bottom:7px;margin-bottom:14px}
+.sech h2{font-size:19px}
+.sech .sub{font-size:12px;color:var(--ink3);font-family:'Barlow Condensed';letter-spacing:.09em;text-transform:uppercase}
+.panel{background:var(--panel);border:1px solid var(--line);padding:16px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.kpi{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--acc);padding:11px 12px;min-width:0}
+.kpi .l{font-family:'Barlow Condensed';font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink3);margin-bottom:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kpi .v{font-family:'Barlow Condensed';font-size:25px;font-weight:600;line-height:1;white-space:nowrap}
+.kpi .d{font-size:11px;margin-top:5px;color:var(--ink3);white-space:nowrap}
+.up{color:var(--pos)}.down{color:var(--neg)}
+.ctl{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:12px}
+.ctl .gl{font-family:'Barlow Condensed';font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink3);margin-right:4px}
+.ctl .sp{width:14px}
+input[type=text],select{background:var(--panel2);color:var(--ink);border:1px solid var(--line2);padding:6px 9px;font-family:'Barlow';font-size:13px}
+.chip{background:var(--panel2);border:1px solid var(--line2);color:var(--ink2);font-family:'Barlow Condensed';font-size:11.5px;letter-spacing:.11em;text-transform:uppercase;padding:6px 11px;cursor:pointer}
+.chip:hover{color:var(--ink)}
+.chip.on{background:var(--acc);border-color:var(--acc);color:var(--acc-ink);font-weight:600}
+.tw{overflow:auto;max-height:620px;border:1px solid var(--line)}
+table{border-collapse:collapse;width:100%;font-size:12.5px;font-variant-numeric:tabular-nums}
+th{position:sticky;top:0;background:var(--panel2);color:var(--ink);font-family:'Barlow Condensed';font-size:11px;letter-spacing:.13em;text-transform:uppercase;text-align:right;padding:9px 10px;border-bottom:1px solid var(--line2);white-space:nowrap;z-index:2;cursor:pointer}
+th.l,td.l{text-align:left}
+td{padding:7px 10px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap;color:var(--ink2)}
+td.wrap{white-space:normal;min-width:260px}
+tbody tr:hover td{background:var(--panel2);color:var(--ink)}
+td.strong{color:var(--ink);font-weight:600}
+.cal-mon{font-family:'Barlow Condensed';font-size:17px;letter-spacing:.14em;text-transform:uppercase;margin:18px 0 8px;border-bottom:1px solid var(--line);padding-bottom:5px}
+.cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:3px}
+.cal .dow{font-family:'Barlow Condensed';font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--ink3);text-align:center;padding:4px 0}
+.cell{background:var(--panel2);border:1px solid var(--line);min-height:104px;padding:6px 7px 18px;cursor:pointer;position:relative;overflow:hidden;text-align:left;color:var(--ink);font:inherit}
+.cell:hover{border-color:var(--ink2)}
+.cell.empty{background:transparent;border-color:transparent;cursor:default}
+.cell .heat{position:absolute;left:0;right:0;top:0;height:3px}
+.cell .dn{font-family:'Barlow Condensed';font-size:15px;font-weight:600;line-height:1}
+.cell .mv{font-family:'Barlow Condensed';font-size:17px;font-weight:600;line-height:1.1;margin-top:4px}
+.cell .dd{font-size:10.5px;margin-top:1px}
+.cell .ev{font-family:'Barlow Condensed';font-size:10px;letter-spacing:.08em;text-transform:uppercase;margin-top:4px;line-height:1.2}
+.cell .ln{font-size:10px;color:var(--ink3);line-height:1.3;margin-top:3px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.cell .lc{position:absolute;right:6px;top:6px;font-family:'Barlow Condensed';font-size:10px;letter-spacing:.06em;background:var(--launch);color:#fff;padding:1px 5px;border-radius:2px}
+.cell .em{position:absolute;right:6px;bottom:8px;font-family:'Barlow Condensed';font-size:10px;letter-spacing:.06em;color:var(--ink2);border:1px solid var(--line2);padding:0 4px;border-radius:2px}
+.cell.saleday{box-shadow:inset 0 0 0 1px color-mix(in oklab,var(--bf) 55%,transparent)}
+.cell.dim{opacity:.35}
+.cell .startflag,.startflag{font-family:'Barlow Condensed';font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;background:var(--bf);color:#fff;padding:0 4px;border-radius:1px}
+.cell .endflag,.endflag{font-family:'Barlow Condensed';font-size:9px;letter-spacing:.1em;text-transform:uppercase;border:1px solid var(--bf);color:var(--ink);padding:0 3px;border-radius:1px}
+.cell .startflag,.cell .endflag{position:absolute;left:6px;bottom:8px}
+.salebadge{display:inline-block;font-family:'Barlow Condensed';font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;background:var(--bf);color:#fff;padding:1px 6px;border-radius:2px;margin-right:4px}
+.cal-mon{display:flex;justify-content:space-between;align-items:baseline}
+.cal-ms{font-size:11px;letter-spacing:.12em;color:var(--ink3)}
+.cell .pb{position:absolute;left:0;right:0;bottom:0;height:4px}
+.legend{display:flex;flex-wrap:wrap;gap:14px;font-size:11px;color:var(--ink3);font-family:'Barlow Condensed';letter-spacing:.1em;text-transform:uppercase;margin:8px 0}
+.legend span{display:flex;align-items:center;gap:6px}
+.sw{width:12px;height:12px;display:inline-block;border-radius:2px}
+.sw.ln{height:2px;width:16px;border-radius:0}
+.sw.dash{height:0;width:16px;border-top:2px dashed var(--py);background:none}
+.chartbox{position:relative;height:380px}
+.chartbox.sm{height:270px}
+.chartbox.xs{height:220px}
+.note{background:var(--panel2);border-left:3px solid var(--acc);padding:11px 14px;font-size:13px;color:var(--ink2);line-height:1.6;margin-bottom:14px}
+.note b{color:var(--ink)}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px}
+.three{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.ins{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px}
+.ins>div{background:var(--panel);border:1px solid var(--line);border-top:3px solid var(--acc);padding:14px}
+.ins h4{font-size:14px;margin-bottom:7px}
+.ins p{font-size:13px;color:var(--ink2);line-height:1.6;margin:0}
+.src{font-size:11px;color:var(--ink3);font-style:italic;margin-top:6px}
+.rail{border:1px solid var(--line);background:var(--panel);margin-bottom:18px}
+.rail-h{display:flex;gap:10px;align-items:center;padding:8px 14px;border-bottom:1px solid var(--line);font-family:'Barlow Condensed';font-size:13px;letter-spacing:.16em;text-transform:uppercase}
+.rail-h .s{font-size:11px;color:var(--ink3);margin-left:auto;letter-spacing:.06em;text-transform:none;font-family:'Barlow'}
+.rail-body{overflow-x:auto;padding:10px 14px 8px}
+.rail-track{position:relative;height:128px;min-width:900px}
+.rail-blk{position:absolute;top:0;height:36px;border-radius:2px;padding:3px 7px;overflow:hidden;color:#fff;border:1px solid var(--bg);text-align:left;font:inherit;cursor:pointer}
+.rail-blk:hover{outline:2px solid var(--ink);outline-offset:-1px}
+.rail-blk.sale{box-shadow:0 0 12px color-mix(in oklab,var(--bf) 45%,transparent)}
+.rail-blk.nosale{background:transparent!important;border:1px dashed var(--line2);color:var(--ink3)!important}
+.rail-blk .nm{font-family:'Barlow Condensed';font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rail-blk .dt{font-size:10px;opacity:.85;white-space:nowrap}
+.rail-ev{position:absolute;top:80px;height:24px;border-left:2px solid;padding-left:4px;font-family:'Barlow Condensed';font-size:10px;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;color:var(--ink2)}
+.rail-ax{position:absolute;top:108px;left:0;right:0;height:18px}
+.rail-ax i{position:absolute;font-style:normal;font-family:'Barlow Condensed';font-size:10px;color:var(--ink3);border-left:1px solid var(--line2);padding-left:3px}
+.mask{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:200;display:none;align-items:flex-start;justify-content:center;padding:36px 16px;overflow:auto}
+.mask.on{display:flex}
+.modal{background:var(--panel);border:1px solid var(--line2);max-width:900px;width:100%}
+.modal-h{display:flex;align-items:center;gap:14px;padding:14px 18px;border-bottom:1px solid var(--line)}
+.modal-h h3{font-size:20px}
+.modal-h .x{margin-left:auto;background:none;border:1px solid var(--line2);color:var(--ink2);width:30px;height:30px;cursor:pointer;font-size:17px}
+.modal-b{padding:16px 18px 22px}
+.mgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:8px;margin-bottom:16px}
+.mk{background:var(--panel2);border:1px solid var(--line);padding:9px 11px}
+.mk .l{font-family:'Barlow Condensed';font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3)}
+.mk .v{font-family:'Barlow Condensed';font-size:20px;font-weight:600;margin-top:2px}
+.mk .d{font-size:11px}
+.blk h4{font-size:13px;margin:12px 0 6px;border-bottom:1px solid var(--line);padding-bottom:4px}
+.li{font-size:13px;color:var(--ink2);padding:5px 0;border-bottom:1px solid var(--line);line-height:1.45}
+.li b{color:var(--ink)}
+.hm{display:grid;grid-template-columns:44px repeat(24,minmax(0,1fr));gap:2px;font-size:10px;font-family:'Barlow Condensed';color:var(--ink3);min-width:640px}
+.hm div{height:22px;display:flex;align-items:center;justify-content:center;border-radius:2px}
+.hm .lab{justify-content:flex-start;letter-spacing:.08em;text-transform:uppercase}
+.ctlbox{background:var(--panel);border:1px solid var(--line);padding:12px 14px;margin-bottom:12px}
+.chipgrp{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;margin-bottom:8px}
+.chipgrp.sep{border-top:1px solid var(--line);padding-top:10px}
+.chipgrp>.gl{font-family:'Barlow Condensed';font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink3);flex:0 0 96px;line-height:1.2}
+.slider{flex:1;max-width:300px;accent-color:var(--cy)}
+.hint{color:var(--ink3);font-size:11.5px}
+.vlab{font-family:'Barlow Condensed';font-size:15px;font-weight:600;letter-spacing:.04em}
+input[type=number]{background:var(--panel2);color:var(--ink);border:1px solid var(--line2);padding:6px 9px;font-family:'Barlow';font-size:13px}
+.badge{display:inline-block;font-family:'Barlow Condensed';font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;background:var(--launch);color:#fff;padding:1px 6px;border-radius:2px}
+.tag{display:inline-block;font-family:'Barlow Condensed';font-size:10px;letter-spacing:.12em;text-transform:uppercase;padding:1px 6px;border:1px solid var(--line2);color:var(--ink3);border-radius:2px;margin-right:4px}
+.pdot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;vertical-align:baseline}
+.muted{color:var(--ink3)}
+tr.hl td{background:color-mix(in oklab,var(--launch) 9%,transparent)}
+td.cur{background:color-mix(in oklab,var(--cy) 22%,transparent)}
+.bindbar{display:flex;height:22px;margin-top:10px;border:1px solid var(--line);overflow:hidden;border-radius:2px}
+.bindbar div{display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed';font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:#fff;white-space:nowrap;overflow:hidden;border-right:2px solid var(--panel)}
+.mdelta{font-size:11px;margin-top:2px}
+.bar{height:8px;background:var(--cy);border-radius:0 4px 4px 0;display:inline-block;vertical-align:middle}
+@media(max-width:1100px){.two,.three{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:640px){main{padding:16px}.hbar{padding:10px 16px;flex-wrap:wrap}.hmeta{margin-left:0;text-align:left}nav{padding:0 8px}.cal{gap:2px}.cell{min-height:64px;padding:4px 4px 8px}.cell .ln,.cell .ev,.cell .dd{display:none}.cell .mv{font-size:12px}.cell .lc{font-size:9px;right:2px;top:2px;padding:0 3px}.kpi .v{font-size:21px}}
+</style></head><body>
+<header>
+ <div class="hbar">
+  <div class="logo">Livestock</div>
+  <div class="htitle"><span class="eyebrow">Holiday trading review · deadstock.ca</span><h1>Q4 2025 · What Happened</h1></div>
+  <div class="hmeta">1 Oct – 31 Dec 2025 · 92 days<br>Shopify · GA4 · Google Ads · Search Console<br><button class="themebtn" id="themebtn">Light / dark</button></div>
+ </div>
+ <nav id="nav"></nav>
+</header>
+<main>
+<div class="tab on" id="t-ov"></div>
+<div class="tab" id="t-cal"></div>
+<div class="tab" id="t-perf"></div>
+<div class="tab" id="t-ramp"></div>
+<div class="tab" id="t-bfcm"></div>
+<div class="tab" id="t-chan"></div>
+<div class="tab" id="t-prod"></div>
+<div class="tab" id="t-paid"></div>
+<div class="tab" id="t-seo"></div>
+<div class="tab" id="t-notes"></div>
+</main>
+<div class="mask" id="mask" role="dialog" aria-modal="true"><div class="modal"><div class="modal-h"><h3 id="mtitle"></h3><button class="x" id="mx" aria-label="Close">&times;</button></div><div class="modal-b" id="mbody"></div></div></div>
+<script>
+const PAY=/*__DATA__*/null;
+const D=PAY.daily, DI={}; D.forEach(r=>DI[r.d]=r);
+const $=(s,c)=>(c||document).querySelector(s);
+const ok=v=>typeof v==='number'&&isFinite(v);
+const n0=v=>!ok(v)?'—':Math.round(v).toLocaleString('en-CA');
+const m0=v=>!ok(v)?'—':(v<0?'-$':'$')+Math.abs(Math.round(v)).toLocaleString('en-CA');
+const m2=v=>!ok(v)?'—':'$'+v.toLocaleString('en-CA',{minimumFractionDigits:2,maximumFractionDigits:2});
+const pc=(v,d)=>!ok(v)?'—':(v*100).toFixed(d==null?2:d)+'%';
+const kk=v=>!ok(v)?'—':(v<0?'-$':'$')+(Math.abs(v)>=1e6?(Math.abs(v)/1e6).toFixed(2)+'M':Math.abs(v)>=1e3?(Math.abs(v)/1e3).toFixed(1)+'k':Math.round(Math.abs(v)));
+const dl=s=>{const [y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d);};
+const fd=s=>dl(s).toLocaleDateString('en-CA',{weekday:'short',day:'numeric',month:'short'});
+const fds=s=>dl(s).toLocaleDateString('en-CA',{day:'numeric',month:'short'});
+const fdl=s=>dl(s).toLocaleDateString('en-CA',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+const delta=(a,b)=>(!ok(a)||!ok(b)||!b)?null:(a-b)/Math.abs(b);
+const dsp=(v,lab)=>!ok(v)?'<span class="d">—</span>':`<span class="d ${v>=0?'up':'down'}">${v>=0?'▲':'▼'} ${(Math.abs(v)*100).toFixed(1)}% ${lab||'YoY'}</span>`;
+const dspInv=(v,lab)=>!ok(v)?'<span class="d">—</span>':`<span class="d ${v<=0?'up':'down'}">${v>=0?'▲':'▼'} ${(Math.abs(v)*100).toFixed(1)}% ${lab||'YoY'}</span>`;
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const sum=(rs,k)=>rs.reduce((a,r)=>a+(ok(r[k])?r[k]:0),0);
+const rng=(s,e)=>D.filter(r=>r.d>=s&&r.d<=e);
+const agg=(rs,pre)=>{pre=pre||'';const net=sum(rs,pre+'net'),ses=sum(rs,pre+'sess'),ord=sum(rs,pre+'orders');
+  let w=0,o=0;rs.forEach(r=>{const q=r[pre+'orders'],a=r[pre+'aov'];if(ok(q)&&ok(a)){w+=q*a;o+=q;}});
+  return {net,gross:sum(rs,pre+'gross'),disc:sum(rs,pre+'disc'),ret:sum(rs,pre+'ret'),sess:ses,orders:ord,cvr:ses?ord/ses:null,aov:o?w/o:null};};
+const LBYD={};PAY.launches.forEach(l=>(LBYD[l.d]=LBYD[l.d]||[]).push(l));
+const EBYD={};PAY.events.forEach(e=>(EBYD[e.d]=EBYD[e.d]||[]).push(e));
+const periodOf=d=>PAY.periods.find(p=>p.s<=d&&d<=p.e);
+const KC=k=>css('--'+k);
+
+/* ---------- theme ---------- */
+(function(){let t=null;try{t=localStorage.getItem('ls-theme');}catch(e){}
+ if(!t)t=matchMedia('(prefers-color-scheme: light)').matches?'light':'dark';
+ document.documentElement.dataset.theme=t;
+ $('#themebtn').onclick=()=>{const n=document.documentElement.dataset.theme==='light'?'dark':'light';
+  document.documentElement.dataset.theme=n;try{localStorage.setItem('ls-theme',n);}catch(e){}
+  Object.values(CH).forEach(c=>c.destroy());for(const k in CH)delete CH[k];RENDERED.clear();show(cur);};})();
+
+/* ---------- charts ---------- */
+const CH={};
+function chartDefaults(){Chart.defaults.color=css('--ink3');Chart.defaults.font.family="'Barlow',system-ui,sans-serif";Chart.defaults.font.size=11;
+ Chart.defaults.borderColor=css('--grid');Chart.defaults.plugins.tooltip.backgroundColor=css('--panel2');Chart.defaults.plugins.tooltip.titleColor=css('--ink');
+ Chart.defaults.plugins.tooltip.bodyColor=css('--ink2');Chart.defaults.plugins.tooltip.borderColor=css('--line2');Chart.defaults.plugins.tooltip.borderWidth=1;
+ Chart.defaults.plugins.tooltip.padding=9;Chart.defaults.plugins.legend.display=false;Chart.defaults.animation=false;}
+function mk(id,cfg){if(CH[id])CH[id].destroy();chartDefaults();const el=document.getElementById(id);if(!el)return;CH[id]=new Chart(el,cfg);return CH[id];}
+const fmtBy={money:kk,num:n0,pct:v=>pc(v,2),pct1:v=>pc(v,1),money2:m2};
+function lineOpts(fmt,extra){return Object.assign({responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
+ scales:{x:{grid:{display:false},ticks:{maxRotation:0,autoSkipPadding:14}},y:{beginAtZero:true,grid:{color:css('--grid')},ticks:{callback:v=>fmtBy[fmt](v)}}},
+ plugins:{tooltip:{callbacks:{label:c=>' '+c.dataset.label+': '+(c.raw==null?'—':fmtBy[fmt](c.raw))}}}},extra||{});}
+const cyDs=(label,data,o)=>Object.assign({label,data,borderColor:css('--cy'),backgroundColor:css('--cy'),borderWidth:2,pointRadius:0,pointHoverRadius:4,tension:.25},o||{});
+const pyDs=(label,data,o)=>Object.assign({label,data,borderColor:css('--py'),backgroundColor:css('--py'),borderWidth:2,borderDash:[5,4],pointRadius:0,pointHoverRadius:4,tension:.25},o||{});
+const barOpts=(fmt,horiz,extra)=>Object.assign({responsive:true,maintainAspectRatio:false,indexAxis:horiz?'y':'x',
+ scales:{[horiz?'y':'x']:{grid:{display:false}},[horiz?'x':'y']:{beginAtZero:true,grid:{color:css('--grid')},ticks:{callback:v=>fmtBy[fmt](v)}}},
+ plugins:{tooltip:{callbacks:{label:c=>' '+c.dataset.label+': '+fmtBy[fmt](c.raw)}}},
+ datasets:{bar:{borderRadius:4,borderSkipped:'start',maxBarThickness:28,categoryPercentage:.8,barPercentage:.9}}},extra||{});
+/* vertical line markers plugin for launch/event days */
+const markers={id:'markers',afterDatasetsDraw(c,a,o){if(!o||!o.days)return;const x=c.scales.x,ar=c.chartArea,ctx=c.ctx;ctx.save();
+ o.days.forEach(m=>{const i=c.data.labels.indexOf(m.label);if(i<0)return;const px=x.getPixelForValue(i);ctx.strokeStyle=m.color;ctx.globalAlpha=.55;ctx.lineWidth=1;ctx.setLineDash([2,3]);
+  ctx.beginPath();ctx.moveTo(px,ar.top);ctx.lineTo(px,ar.bottom);ctx.stroke();ctx.globalAlpha=1;ctx.setLineDash([]);
+  if(m.text){ctx.fillStyle=css('--ink2');ctx.font="600 10px 'Barlow Condensed'";ctx.textAlign='left';ctx.fillText(m.text.toUpperCase(),px+3,ar.top+10+(m.row||0)*12);}});ctx.restore();}};
+Chart.register(markers);
+const evMarkers=()=>PAY.events.filter(e=>['bf','box'].includes(e.k)||e.n==='Christmas Day').map((e,i)=>({label:fds(e.d),color:KC(e.k==='hol'?'hol':e.k),text:e.n,row:i%2}));
+
+/* ---------- tables ---------- */
+function table(el,cols,rows,opts){opts=opts||{};let sk=opts.sort||null,sd=-1;
+ const draw=()=>{let rs=rows.slice();if(sk!=null){const c=cols.find(c=>c.k===sk);rs.sort((a,b)=>{const va=c.v?c.v(a):a[sk],vb=c.v?c.v(b):b[sk];
+   if(va==null)return 1;if(vb==null)return -1;return (va>vb?1:va<vb?-1:0)*sd;});}
+  el.innerHTML=`<div class="tw" style="${opts.h?'max-height:'+opts.h+'px':''}"><table><thead><tr>${cols.map(c=>`<th class="${c.l?'l':''}" data-k="${c.k}" title="Sort">${c.t}${sk===c.k?(sd<0?' ▾':' ▴'):''}</th>`).join('')}</tr></thead><tbody>${
+   rs.map(r=>`<tr class="${opts.rowcls?opts.rowcls(r):''}" ${opts.click?`data-d="${esc(r[opts.click])}" style="cursor:pointer"`:''}>${cols.map(c=>`<td class="${c.l?'l':''} ${c.cls||''}">${c.f?c.f(r):esc(r[c.k])}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+  el.querySelectorAll('th').forEach(th=>th.onclick=()=>{const k=th.dataset.k;if(sk===k)sd=-sd;else{sk=k;sd=-1;}draw();});
+  if(opts.click)el.querySelectorAll('tbody tr').forEach(tr=>tr.onclick=()=>opts.onclick(tr.dataset.d));};
+ draw();}
+const dcell=v=>!ok(v)?'—':`<span class="${v>=0?'up':'down'}">${v>=0?'+':''}${(v*100).toFixed(1)}%</span>`;
+const kpi=(l,v,d)=>`<div class="kpi"><div class="l">${l}</div><div class="v">${v}</div>${d||''}</div>`;
+
+/* ---------- sale rail ---------- */
+const SALES=PAY.sales||[];
+const saleOf=d=>SALES.find(x=>x.s<=d&&d<=x.e);
+const isSaleEmail=c=>/sale|% ?off|black friday|boxing|last chance/i.test((c.name||'')+' '+(c.subj||''));
+function rail(){const s=dl('2025-10-01'),e=dl('2025-12-31'),span=(e-s)/864e5+1;const X=d=>((dl(d)-s)/864e5)/span*100,W=(a,b)=>X(b)-X(a)+100/span;
+ const sd=D.filter(r=>saleOf(r.d)).length;
+ const blk=(p,kind,top)=>{const a=agg(rng(p.s,p.e)),b=agg(rng(p.s,p.e),'py_');
+  return `<button class="rail-blk ${kind}" data-ps="${p.s}" data-pe="${p.e}" data-pn="${esc(p.n)}" style="top:${top}px;left:${X(p.s)}%;width:calc(${W(p.s,p.e)}% - 2px);background:${KC(p.k)};${p.k==='bau'?'color:var(--ink)':''}" title="${esc(p.n)} · ${fds(p.s)} – ${fds(p.e)} · click for the period summary"><div class="nm">${esc(p.n)}</div><div class="dt">${kk(a.net)} · ${dcellTxt(delta(a.net,b.net))}</div></button>`;};
+ // full-price gaps in the sale lane
+ const gaps=[];let cur='2025-10-01';SALES.slice().sort((a,b)=>a.s<b.s?-1:1).forEach(x=>{if(cur<x.s){const pe=new Date(dl(x.s));pe.setDate(pe.getDate()-1);gaps.push({n:'Full price',s:cur,e:pe.toLocaleDateString('en-CA'),k:'bau'});}
+  const nx=new Date(dl(x.e));nx.setDate(nx.getDate()+1);cur=nx.toLocaleDateString('en-CA');});if(cur<='2025-12-31')gaps.push({n:'Full price',s:cur,e:'2025-12-31',k:'bau'});
+ const evs=PAY.events.map(e=>`<div class="rail-ev" style="left:${X(e.d)}%;border-color:${KC(e.k)}" title="${esc(e.n)} · ${fd(e.d)}">${({'Black Friday':'Black Friday','Thanksgiving (CA)':'Thanksgiving','Halloween':'Halloween','Boxing Day':'Boxing Day'})[e.n]||''}</div>`).join('');
+ const ax=['2025-10-01','2025-10-15','2025-11-01','2025-11-15','2025-12-01','2025-12-15'].map(d=>`<i style="left:${X(d)}%">${fds(d)}</i>`).join('');
+ return `<div class="rail"><div class="rail-h">Sale calendar <span class="badge">${sd} sale days</span><span class="tag">${92-sd} full price days</span><span class="s">Top lane: markdown windows from Klaviyo sends (outlined = full price). Bottom lane: trading periods. Click any block for its summary</span></div>
+ <div class="rail-body"><div class="rail-track">${SALES.map(x=>blk(x,'sale',0)).join('')}${gaps.map(x=>blk(x,'nosale',0)).join('')}${PAY.periods.map(p=>blk(p,'per',40)).join('')}${evs}<div class="rail-ax">${ax}</div></div></div></div>`;}
+document.addEventListener('click',e=>{const b=e.target.closest('.rail-blk[data-ps],tr[data-ps]');if(b)openPeriod(b.dataset.ps,b.dataset.pe,b.dataset.pn);});
+const dcellTxt=v=>!ok(v)?'—':(v>=0?'+':'')+(v*100).toFixed(0)+'% YoY';
+
+/* ---------- day modal ---------- */
+const CBYD={};(PAY.comms||[]).forEach(c=>(CBYD[c.d]=CBYD[c.d]||[]).push(c));
+const CH_ORDER=(()=>{const t={};Object.values(PAY.chan_daily||{}).forEach(rs=>rs.forEach(x=>t[x.ch]=(t[x.ch]||0)+(x.rev||0)));return Object.keys(t).sort((a,b)=>t[b]-t[a]);})();
+const CH_TOP=CH_ORDER.slice(0,7);
+const chColor=c=>{const i=CH_TOP.indexOf(c);return i<0?css('--py'):css('--s'+(i+1));};
+const GROUPS=['Paid search & Shopping (Google)','Organic search','Direct','Email (Klaviyo)','Meta','Other'];
+const GA_GRP={'Paid Search':0,'Paid Shopping':0,'Cross-network':0,'Organic Search':1,'Organic Shopping':1,'Direct':2,'Email':3,'SMS':3,'Mobile Push Notifications':3,'Paid Social':4,'Organic Social':4};
+const gaGroup=c=>GROUPS[GA_GRP[c]??5];
+const SE=/^(alphabet|microsoft|duckduckgo|yahoo!|brave|ecosia|msn|naver|goodsearch)$/;
+const shGroup=x=>x.plat==='direct'?GROUPS[2]:x.plat==='klaviyo'?GROUPS[3]:x.plat==='meta'?GROUPS[4]:(x.plat==='alphabet'&&x.ch==='google'&&x.type==='paid')||(x.plat==='alphabet'&&x.ch==='gmail'&&x.type==='paid')?GROUPS[0]:SE.test(x.plat)&&x.type==='organic'&&x.ch!=='gmail'?GROUPS[1]:GROUPS[5];
+const SHG=(()=>{const o={};GROUPS.forEach(g=>o[g]={g,sess:0,sales:0,ord:0,newo:0,reto:0,n:0});(PAY.shop_ch||[]).forEach(x=>{const t=o[shGroup(x)];t.sess+=x.sess;t.sales+=x.sales;t.ord+=x.ord;t.newo+=x.newo;t.reto+=x.reto;t.n++;});return o;})();
+const HAS_SHOPCH=(PAY.shop_ch||[]).length>0;
+// calibration: scale each group's GA4 revenue so the quarter split matches Shopify's last-click split
+const CAL_F=(()=>{const ga={};GROUPS.forEach(g=>ga[g]=0);Object.values(PAY.chan_daily||{}).forEach(rs=>rs.forEach(x=>ga[gaGroup(x.ch)]+=x.rev||0));
+ const gT=Object.values(ga).reduce((a,b)=>a+b,0),sT=GROUPS.reduce((a,g)=>a+SHG[g].sales,0),f={};
+ GROUPS.forEach(g=>f[g]=HAS_SHOPCH&&ga[g]>0&&SHG[g].sales>0?(SHG[g].sales/sT)/(ga[g]/gT):1);return f;})();
+const GAOV=g=>SHG[g]&&SHG[g].ord>=20?SHG[g].sales/SHG[g].ord:(sum(Object.values(SHG),'sales')/sum(Object.values(SHG),'ord'));
+// one day (or range) of channel contribution, by group
+function chanGroups(days){const o={};GROUPS.forEach(g=>o[g]={g,net:0,sess:0,ord:0,rev:0});
+ days.forEach(r=>{const ch=(PAY.chan_daily||{})[r.d]||[];const w={};ch.forEach(x=>{const g=gaGroup(x.ch);w[g]=(w[g]||0)+(x.rev||0)*CAL_F[g];o[g].sess+=x.sess||0;o[g].rev+=x.rev||0;});
+  const W=Object.values(w).reduce((a,b)=>a+b,0);Object.entries(w).forEach(([g,v])=>{const n=W?r.net*v/W:0;o[g].net+=n;o[g].ord+=n/GAOV(g);});});
+ return GROUPS.map(g=>o[g]).filter(x=>x.sess>0||x.net>0).sort((a,b)=>b.net-a.net);}
+const GCOL=g=>g==='Other'?css('--py'):css('--s'+(GROUPS.indexOf(g)+1));
+const EST='<span class="muted" style="font-size:9px"> est.</span>';
+const HAS_COMMS=(PAY.comms||[]).length>0, HAS_CHAN=Object.keys(PAY.chan_daily||{}).length>0;
+function openDay(d){const r=DI[d];if(!r)return;const p=periodOf(d);
+ $('#mtitle').textContent=fdl(d);
+ const L=LBYD[d]||[],E=EBYD[d]||[],C=CBYD[d]||[];
+ const ks=[['Net sales',m0(r.net),delta(r.net,r.py_net)],['Sessions',n0(r.sess),delta(r.sess,r.py_sess)],['CVR',pc(r.cvr),delta(r.cvr,r.py_cvr)],
+  ['Orders (est.)',n0(r.orders),delta(r.orders,r.py_orders)],['AOV',m2(r.aov),delta(r.aov,r.py_aov)],['Gross sales',m0(r.gross),delta(r.gross,r.py_gross)],
+  ['Returns',m0(r.ret),delta(r.ret,r.py_ret),1],['Discounts',m0(r.disc),delta(r.disc,r.py_disc),1],['Google spend',m0(r.g_cost),delta(r.g_cost,r.py_g_cost)],
+  ['MER',r.g_cost?(r.net/r.g_cost).toFixed(1)+'x':'—',r.g_cost&&r.py_g_cost?delta(r.net/r.g_cost,r.py_net/r.py_g_cost):null],
+  ['Google conv.',n0(r.g_conv),delta(r.g_conv,r.py_g_conv)],['Organic clicks',n0(r.sc_clk),null]];
+ const dd=(v,inv)=>v==null||!ok(v)?'':`<div class="mdelta ${(inv?v<=0:v>=0)?'up':'down'}">${v>=0?'▲':'▼'} ${(Math.abs(v)*100).toFixed(0)}%</div>`;
+ let h=`<div class="mgrid">${ks.map(([l,v,x,inv])=>`<div class="mk"><div class="l">${l}</div><div class="v">${v}</div>${dd(x,inv)}</div>`).join('')}</div>
+ <div class="src" style="margin:-8px 0 10px">Changes are against the same date in 2024 (${m0(r.py_net)} net). Same weekday last year (${fd(r.wpyd)}): ${m0(r.wpy_net)} net, ${dcellTxt(delta(r.net,r.wpy_net)).replace(' YoY','')}.</div>`;
+ h+=`<div class="blk"><h4>Trading period</h4><div class="li"><span class="pdot" style="background:${KC(p.k)}"></span><b>${esc(p.n)}</b> <span class="muted">${fds(p.s)} – ${fds(p.e)}</span></div>${saleOf(d)?`<div class="li"><span class="salebadge">On sale</span> <b>${esc(saleOf(d).n)}</b> <span class="muted">${fds(saleOf(d).s)} – ${fds(saleOf(d).e)}</span></div>`:'<div class="li muted">Full price day</div>'}${E.map(e=>`<div class="li" style="border-left:3px solid ${KC(e.k)};padding-left:9px"><b>Key date</b> · ${esc(e.n)}</div>`).join('')}</div>`;
+ h+=`<div class="blk"><h4>Launches (${L.length})</h4>${L.length?L.map(l=>`<div class="li"><span class="badge">Launch</span> <b>${esc(l.name)}</b><br><span class="muted" style="font-size:12px">${l.match?`PDP over Q4: ${n0(l.v)} views · ${n0(l.u)} users · ${n0(l.ke)} key events`:'No matching product page in the GA4 export'}</span></div>`).join(''):'<div class="li">No launches on the release calendar</div>'}</div>`;
+ const em=C.filter(c=>!/sms/i.test(c.ch)),sm=C.filter(c=>/sms/i.test(c.ch));
+ h+=`<div class="blk"><h4>Klaviyo email campaigns sent (${HAS_COMMS?em.length:'—'})</h4>`+(!HAS_COMMS?'<div class="li muted">Not in the uploaded files. Add a Klaviyo campaign export as <code>raw/klaviyo_campaigns.csv</code> and rebuild to list each send here.</div>':
+  em.length?em.map(c=>`<div class="li"><span class="tag">Email</span><b>${esc(c.subj||c.name)}</b> <span class="muted">${esc(c.t)}</span><br><span class="muted" style="font-size:12px">${esc(c.name)}</span><br><span class="muted" style="font-size:12px">${n0(c.rcpt)} recipients · open ${pc(c.open,1)} · click ${pc(c.click,2)} (${n0(c.clicks)} unique) · ${n0(c.aos)} active on site · ${n0(c.unsub)} unsubs${ok(c.rev)?' · '+m0(c.rev)+' attributed revenue':''}${c.seg?' · list: '+esc(c.seg):''}</span></div>`).join('')+(em.some(c=>ok(c.rev))?'':'<div class="src">The Klaviyo export has no revenue column, so attributed revenue is not shown.</div>'):'<div class="li">No email campaign sent this day</div>')+`</div>`;
+ if(sm.length)h+=`<div class="blk"><h4>Klaviyo SMS campaigns sent (${sm.length})</h4>`+sm.map(c=>`<div class="li"><span class="tag">SMS</span><b>${esc(c.name)}</b><br><span class="muted" style="font-size:12px">${n0(c.rcpt)} delivered · click ${pc(c.click,2)} · ${m0(c.rev)} revenue</span></div>`).join('')+`</div>`;
+ const ch=((PAY.chan_daily||{})[d]||[]).filter(x=>(x.rev||0)>0||(x.sess||0)>0).sort((a,b)=>(b.rev||0)-(a.rev||0));
+ h+=`<div class="blk"><h4>Channel contribution that day</h4>`+(!HAS_CHAN?'<div class="li muted">No daily channel data loaded. Add a GA4 report with Date × Session default channel group (sessions, total revenue, transactions) as <code>raw/ga4/channel_daily.csv</code> and rebuild.</div>':
+  (()=>{const rows=chanGroups([r]),T=k=>rows.reduce((a,x)=>a+(x[k]||0),0);
+  return `<div class="tw" style="max-height:none"><table><thead><tr><th class="l">Channel</th><th>Net sales${EST}</th><th>Share</th><th>Sessions</th><th>Orders${EST}</th><th>CVR${EST}</th></tr></thead><tbody>`+
+   rows.map(x=>`<tr><td class="l strong"><span class="pdot" style="background:${GCOL(x.g)}"></span>${esc(x.g)}</td><td class="strong">${m0(x.net)}</td><td>${pc(T('net')?x.net/T('net'):null,1)}</td><td>${n0(x.sess)}</td><td>${n0(x.ord)}</td><td>${pc(x.sess?x.ord/x.sess:null)}</td></tr>`).join('')+
+   `<tr><td class="l strong">Total</td><td class="strong">${m0(T('net'))}</td><td>100%</td><td>${n0(T('sess'))}</td><td>${n0(T('ord'))}</td><td>${pc(T('sess')?T('ord')/T('sess'):null)}</td></tr></tbody></table></div>
+   <div class="src">Shopify only reports channel sales for the whole quarter, so daily figures are estimates. <b>Net sales</b>: the day's Shopify net (${m0(r.net)}) split by each channel's GA4 revenue that day, calibrated so the quarter split matches Shopify's last-click channel report. <b>Orders</b>: estimated net ÷ the channel's Shopify AOV. <b>Sessions</b> are GA4.</div>`;})())+`</div>`;
+ h+=`<div class="blk"><h4>Search that day</h4><div class="li">Google Ads: <b>${m0(r.g_cost)}</b> spend · ${n0(r.g_clk)} clicks · ${ok(r.g_conv)?r.g_conv.toFixed(1):'—'} conversions · ${r.g_conv?m2(r.g_cost/r.g_conv):'—'} per conversion</div>
+  <div class="li">Organic (Search Console): <b>${n0(r.sc_clk)}</b> clicks · ${n0(r.sc_imp)} impressions · CTR ${pc(r.sc_ctr,1)} · avg position ${ok(r.sc_pos)?r.sc_pos.toFixed(1):'—'}</div></div>`;
+ $('#mbody').innerHTML=h;$('#mask').classList.add('on');$('#mx').focus();}
+$('#mx').onclick=()=>$('#mask').classList.remove('on');
+$('#mask').onclick=e=>{if(e.target.id==='mask')$('#mask').classList.remove('on');};
+document.addEventListener('keydown',e=>{if(e.key==='Escape')$('#mask').classList.remove('on');});
+
+/* ================= TABS ================= */
+const TABS=[['ov','Overview'],['cal','Calendar'],['perf','Performance'],['ramp','Rhythm & ramp'],['bfcm','BFCM'],
+ ['chan','Channels'],['prod','Products & brands'],['paid','Paid search'],['seo','Organic search'],['notes','Sources & notes']];
+const RENDERED=new Set();let cur='ov';
+const nav=$('#nav');TABS.forEach(([id,lab])=>{const b=document.createElement('button');b.textContent=lab;b.dataset.t=id;b.onclick=()=>show(id);nav.appendChild(b);});
+function show(id){cur=id;document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.t===id));
+ document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('on',t.id==='t-'+id));
+ if(!RENDERED.has(id)){RENDER[id]();RENDERED.add(id);}try{history.replaceState(null,'','#'+id);}catch(e){}}
+const RENDER={};
+const LABELS=D.map(r=>fds(r.d));
+
+/* ---- Overview ---- */
+RENDER.ov=()=>{const a=agg(D),b=agg(D,'py_');
+ const gc=sum(D,'g_cost'),pgc=sum(D,'py_g_cost'),gk=sum(D,'g_clk'),pgk=sum(D,'py_g_clk'),gv=sum(D,'g_conv'),pgv=sum(D,'py_g_conv');
+ const best=D.slice().sort((x,y)=>y.net-x.net).slice(0,8);
+ $('#t-ov').innerHTML=rail()+`<div class="sec"><div class="sech"><h2>Quarter at a glance</h2><span class="sub">1 Oct – 31 Dec 2025 versus 1 Oct – 31 Dec 2024 (same dates)</span></div>
+ <div class="kpis">${kpi('Net sales',kk(a.net),dsp(delta(a.net,b.net)))}${kpi('Gross sales',kk(a.gross),dsp(delta(a.gross,b.gross)))}
+ ${kpi('Sessions',n0(a.sess),dsp(delta(a.sess,b.sess)))}${kpi('Conversion rate',pc(a.cvr),dsp(delta(a.cvr,b.cvr)))}
+ ${kpi('AOV',m2(a.aov),dsp(delta(a.aov,b.aov)))}${kpi('Orders (est.)',n0(a.orders),dsp(delta(a.orders,b.orders)))}
+ ${kpi('Returns / reversals',kk(a.ret),dspInv(delta(a.ret,b.ret)))}${kpi('Discounts',kk(a.disc),dspInv(delta(a.disc,b.disc)))}
+ ${kpi('Google Ads spend',kk(gc),dsp(delta(gc,pgc)))}${kpi('Google Ads clicks',n0(gk),dsp(delta(gk,pgk)))}
+ ${kpi('Google Ads conv.',n0(gv),dsp(delta(gv,pgv)))}${kpi('Organic search clicks',n0(sum(D,'sc_clk')),'<span class="d">'+n0(sum(D,'sc_imp'))+' impressions</span>')}</div></div>
+ <div class="sec"><div class="sech"><h2>Daily net sales</h2><span class="sub">2025 against the same date in 2024. Click a point to open the day</span></div>
+ <div class="legend"><span><i class="sw ln" style="background:var(--cy)"></i>2025 net sales</span><span><i class="sw dash"></i>2024 net sales</span></div>
+ <div class="panel"><div class="chartbox"><canvas id="c-ov"></canvas></div></div></div>
+ <div class="sec"><div class="sech"><h2>Trading periods</h2><span class="sub">Year on year by period</span></div><div id="ov-per"></div></div>
+ <div class="sec"><div class="sech"><h2>What happened</h2><span class="sub">Read-outs from the data</span></div><div class="ins" id="ov-ins"></div></div>
+ <div class="sec"><div class="sech"><h2>Biggest days</h2><span class="sub">Top eight days by net sales, with what launched</span></div><div id="ov-top"></div></div>`;
+ const c=mk('c-ov',{type:'line',data:{labels:LABELS,datasets:[cyDs('2025',D.map(r=>r.net),{fill:{target:'origin'},backgroundColor:css('--cy')+'22'}),pyDs('2024',D.map(r=>r.py_net))]},
+  options:lineOpts('money',{onClick:(e,els)=>{if(els.length)openDay(D[els[0].index].d);},plugins:{markers:{days:evMarkers()},tooltip:{callbacks:{label:c=>' '+c.dataset.label+': '+m0(c.raw),
+   afterBody:it=>{const L=LBYD[D[it[0].dataIndex].d];return L?['', 'Launches: '+L.length]:[];}}}}})});
+ const pr=PAY.periods.map(p=>{const rs=rng(p.s,p.e),x=agg(rs),y=agg(rs,'py_');return {n:p.n,s:p.s,e:p.e,days:rs.length,net:x.net,py:y.net,dn:delta(x.net,y.net),sess:x.sess,ds:delta(x.sess,y.sess),cvr:x.cvr,dc:delta(x.cvr,y.cvr),aov:x.aov,da:delta(x.aov,y.aov),share:x.net/a.net,launches:PAY.launches.filter(l=>l.d>=p.s&&l.d<=p.e).length};});
+ table($('#ov-per'),[{k:'n',t:'Period',l:1,cls:'strong'},{k:'s',t:'Dates',l:1,f:r=>fds(r.s)+' – '+fds(r.e)},{k:'net',t:'Net sales',f:r=>m0(r.net)},{k:'py',t:'2024',f:r=>m0(r.py)},{k:'dn',t:'Δ net',f:r=>dcell(r.dn)},
+  {k:'share',t:'Share of Q4',f:r=>pc(r.share,1)},{k:'sess',t:'Sessions',f:r=>n0(r.sess)},{k:'ds',t:'Δ sess',f:r=>dcell(r.ds)},{k:'cvr',t:'CVR',f:r=>pc(r.cvr)},{k:'dc',t:'Δ CVR',f:r=>dcell(r.dc)},
+  {k:'aov',t:'AOV',f:r=>m2(r.aov)},{k:'da',t:'Δ AOV',f:r=>dcell(r.da)},{k:'launches',t:'Launches',f:r=>r.launches}],pr);
+ const oc=agg(rng('2025-10-01','2025-10-31')),ocp=agg(rng('2025-10-01','2025-10-31'),'py_');
+ const bf=agg(rng('2025-11-21','2025-12-01')),bfp=agg(rng('2025-11-21','2025-12-01'),'py_');
+ const xb=agg(rng('2025-12-22','2025-12-26')),xbp=agg(rng('2025-12-22','2025-12-26'),'py_');
+ const ins=[
+  ['Flat quarter, very different shape',`Net sales finished at <b>${kk(a.net)}</b>, ${dcellTxt(delta(a.net,b.net))}, on <b>${dcellTxt(delta(a.sess,b.sess)).replace(' YoY','')}</b> sessions. Conversion rose to <b>${pc(a.cvr)}</b> (from ${pc(b.cvr)}), so fewer visits converted harder. The flat total hides a weak October and a much stronger late November.`],
+  ['October was the soft spot',`October net sales were <b>${kk(oc.net)}</b>, ${dcellTxt(delta(oc.net,ocp.net))}, with sessions ${dcellTxt(delta(oc.sess,ocp.sess))} and conversion ${dcellTxt(delta(oc.cvr,ocp.cvr))}. 13 Oct closed negative after a $12.9k reversal day. Only the 10–11 Oct and 16 Oct launch days beat last year by a wide margin.`],
+  ['BFCM carried the quarter',`21 Nov – 1 Dec delivered <b>${kk(bf.net)}</b>, ${dcellTxt(delta(bf.net,bfp.net))}. Black Friday alone did <b>${m0(DI['2025-11-28'].net)}</b>, the biggest day of Q4, ${dcellTxt(delta(DI['2025-11-28'].net,DI['2025-11-28'].wpy_net))} on Black Friday 2024 (29 Nov). It also had the AJ4 "Black Cat" launch.`],
+  ['Launch days drove the peaks',`Eight of the ten biggest days had a release on the calendar: AJ11 Gamma Blue (13 Dec, <b>${kk(DI['2025-12-13'].net)}</b>), AJ1 Low Varsity Red (15 Nov), Vans × Gallery Dept. (11 Dec). Launch PDPs show the highest key event counts in the GA4 page report.`],
+  ['Christmas peak moved earlier',`22–26 Dec delivered <b>${kk(xb.net)}</b> against ${kk(xbp.net)} in 2024. Last year the peak was 24 Dec (${kk(DI['2025-12-24'].py_net)}). This year it was 23 Dec (${kk(DI['2025-12-23'].net)}), and Christmas Day held at ${kk(DI['2025-12-25'].net)}. Boxing Week (24–31 Dec) finished ${dcellTxt(delta(agg(rng('2025-12-24','2025-12-31')).net,agg(rng('2025-12-24','2025-12-31'),'py_').net))}.`],
+  ['Paid search scaled up',`Google Ads spend rose to <b>${kk(gc)}</b> (${dcellTxt(delta(gc,pgc))}), mostly from the new <i>shop_catchall_footwear</i> Shopping campaign (${kk(20013)}). Clicks rose ${dcellTxt(delta(gk,pgk)).replace(' YoY','')} and conversions ${dcellTxt(delta(gv,pgv)).replace(' YoY','')}, but site sessions fell, so paid traffic did not grow total traffic.`]];
+ $('#ov-ins').innerHTML=ins.map(([h,p])=>`<div><h4>${h}</h4><p>${p}</p></div>`).join('');
+ table($('#ov-top'),[{k:'d',t:'Date',l:1,cls:'strong',f:r=>fd(r.d)},{k:'net',t:'Net sales',f:r=>m0(r.net)},{k:'py_net',t:'Same date 2024',f:r=>m0(r.py_net)},{k:'dy',t:'Δ',v:r=>delta(r.net,r.py_net),f:r=>dcell(delta(r.net,r.py_net))},
+  {k:'sess',t:'Sessions',f:r=>n0(r.sess)},{k:'cvr',t:'CVR',f:r=>pc(r.cvr)},{k:'l',t:'Launches / calendar',l:1,cls:'wrap',f:r=>[...(EBYD[r.d]||[]).map(e=>'<b>'+esc(e.n)+'</b>'),...(LBYD[r.d]||[]).map(l=>esc(l.name))].join(' · ')||'—'}],best,{click:'d',onclick:openDay});};
+
+/* ---- Calendar ---- */
+const CALM={net:['Net sales',kk,'py_net'],gross:['Gross sales',kk,'py_gross'],sess:['Sessions',n0,'py_sess'],orders:['Orders (est.)',n0,'py_orders'],cvr:['Conversion rate',v=>pc(v),'py_cvr'],
+ aov:['AOV',m0,'py_aov'],ret:['Returns',kk,'py_ret'],g_cost:['Google Ads spend',m0,'py_g_cost'],mer:['MER (net ÷ Google spend)',v=>ok(v)?v.toFixed(0)+'x':'—','py_mer'],
+ sc_clk:['Organic search clicks',n0,null],em:['Email recipients',v=>ok(v)&&v?(v/1000).toFixed(0)+'k':'—',null]};
+const calVal=(r,m)=>m==='mer'?(r.g_cost?r.net/r.g_cost:null):m==='py_mer'?(r.py_g_cost?r.py_net/r.py_g_cost:null):m==='em'?(CBYD[r.d]||[]).reduce((a,c)=>a+(c.rcpt||0),0):r[m];
+const CAL={m:'net',yoy:true,sale:true,saleEm:false,ln:true};
+RENDER.cal=()=>{const a=agg(D),b=agg(D,'py_'),gc=sum(D,'g_cost'),pgc=sum(D,'py_g_cost'),sd=D.filter(r=>saleOf(r.d)),sdn=sum(sd,'net');
+ $('#t-cal').innerHTML=rail()+`<div class="kpis">${kpi('Net sales',kk(a.net),dsp(delta(a.net,b.net)))}${kpi('Sessions',n0(a.sess),dsp(delta(a.sess,b.sess)))}${kpi('Orders (est.)',n0(a.orders),dsp(delta(a.orders,b.orders)))}
+ ${kpi('Conversion rate',pc(a.cvr),dsp(delta(a.cvr,b.cvr)))}${kpi('AOV',m2(a.aov),dsp(delta(a.aov,b.aov)))}${kpi('Google Ads spend',kk(gc),dsp(delta(gc,pgc)))}${kpi('MER',(a.net/gc).toFixed(1)+'x',dsp(delta(a.net/gc,b.net/pgc)))}
+ ${kpi('Days on sale',sd.length+' / 92','<span class="d">from Klaviyo sends</span>')}${kpi('Net sales made on sale',pc(sdn/a.net,1),'<span class="d">'+kk(sdn)+'</span>')}${kpi('Emails sent',(PAY.comms||[]).length,'<span class="d">'+(PAY.comms||[]).filter(isSaleEmail).length+' sale emails</span>')}</div>
+ <div class="sec" style="margin-top:22px"><div class="sech"><h2>92-day calendar</h2><span class="sub">Click any day for everything that happened. Click a sale or period block above for its summary</span></div>
+ <div class="note"><b>How to read this.</b> Days with a tinted outline and a coloured strip along the bottom were <b>on sale</b>. <span class="startflag">Sale starts</span> and <span class="endflag">Ends</span> flags mark the first and last day of each markdown. The top bar shows how high the selected metric ran that day. <span class="badge">drops</span> counts launches and ✉ counts Klaviyo emails.</div>
+ <div class="ctlbox"><div class="chipgrp"><span class="gl">Metric</span><select id="cal-m" aria-label="Calendar metric">${Object.entries(CALM).map(([k,[l]])=>`<option value="${k}" ${k===CAL.m?'selected':''}>${l}</option>`).join('')}</select>
+  <button class="chip ${CAL.yoy?'on':''}" data-t="yoy">Show YoY delta</button><button class="chip ${CAL.sale?'on':''}" data-t="sale">Highlight sale days</button><button class="chip ${CAL.saleEm?'on':''}" data-t="saleEm">Sale emails only</button><button class="chip ${CAL.ln?'on':''}" data-t="ln">Show launches</button></div></div>
+ <div id="cal-grid"></div></div>
+ <div class="sec"><div class="sech"><h2>Period summaries</h2><span class="sub">Sale windows and trading periods. Click a row for the full summary</span></div><div id="cal-per"></div></div>`;
+ const draw=()=>{const [lab,fmt,pyk]=CALM[CAL.m];const vals=D.map(r=>calVal(r,CAL.m)).filter(ok),mx=Math.max(...vals,1),mn=Math.min(0,...vals);
+  const heat=v=>{if(!ok(v))return 'transparent';const t=Math.max(0,Math.min(1,(v-mn)/(mx-mn||1)));return `color-mix(in oklab, ${css('--heat0')}, ${css(t<.5?'--heat1':'--heat2')} ${Math.round((t<.5?t*2:(t-.5)*2)*100)}%)`;};
+  let h='';[['2025-10','October 2025'],['2025-11','November 2025'],['2025-12','December 2025']].forEach(([ym,ml])=>{const md=D.filter(r=>r.d.startsWith(ym)),ns=md.filter(r=>saleOf(r.d)).length;
+   h+=`<div class="cal-mon"><span>${ml}</span><span class="cal-ms">${ns} of ${md.length} days on sale</span></div><div class="cal">${['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(x=>`<div class="dow">${x}</div>`).join('')}`;
+   for(let i=0;i<dl(ym+'-01').getDay();i++)h+='<div class="cell empty"></div>';
+   md.forEach(r=>{const L=LBYD[r.d]||[],E=EBYD[r.d]||[],C=(CBYD[r.d]||[]).filter(c=>!CAL.saleEm||isSaleEmail(c)),p=periodOf(r.d),sl=saleOf(r.d),v=calVal(r,CAL.m),pv=pyk?calVal(r,pyk):null;
+    const dim=CAL.saleEm&&!C.length;
+    h+=`<button class="cell ${CAL.sale&&sl?'saleday':''} ${dim?'dim':''}" data-d="${r.d}" aria-label="${fdl(r.d)}: ${lab} ${fmt(v)}"><div class="heat" style="background:${heat(v)}"></div>
+    <div class="dn">${dl(r.d).getDate()}</div>${CAL.ln&&L.length?`<div class="lc">${L.length} drop${L.length>1?'s':''}</div>`:''}
+    <div class="mv">${fmt(v)}</div>${CAL.yoy&&pyk?`<div class="dd">${dcell(delta(v,pv))}</div>`:''}
+    ${E.length?`<div class="ev" style="color:${KC(E[0].k)}">${E.map(e=>esc(e.n)).join(' · ')}</div>`:''}
+    ${CAL.ln&&L.length?`<div class="ln">${L.map(l=>esc(l.name)).join(' · ')}</div>`:''}
+    ${CAL.saleEm&&C.length?`<div class="ln">${C.map(c=>esc(c.subj)).join(' · ')}</div>`:''}
+    ${C.length?`<div class="em" title="${C.length} email(s)">✉ ${C.length}</div>`:''}
+    ${CAL.sale&&sl&&sl.s===r.d?'<span class="startflag">Sale starts</span>':''}${CAL.sale&&sl&&sl.e===r.d?'<span class="endflag">Ends</span>':''}
+    <div class="pb" style="background:${CAL.sale&&sl?KC(sl.k):'var(--bau)'}"></div></button>`;});
+   h+='</div>';});
+  $('#cal-grid').innerHTML=h;document.querySelectorAll('#t-cal .cell[data-d]').forEach(c=>c.onclick=()=>openDay(c.dataset.d));};
+ $('#cal-m').onchange=e=>{CAL.m=e.target.value;draw();};
+ $('#t-cal .ctlbox').addEventListener('click',e=>{const t=e.target.dataset.t;if(!t)return;CAL[t]=!CAL[t];e.target.classList.toggle('on',CAL[t]);draw();});
+ draw();
+ const blocks=[...SALES.map(x=>Object.assign({type:'Sale'},x)),...PAY.periods.map(x=>Object.assign({type:'Trading period'},x))].map(x=>{const rs=rng(x.s,x.e),A=agg(rs),B=agg(rs,'py_'),g=sum(rs,'g_cost'),em=(PAY.comms||[]).filter(c=>c.d>=x.s&&c.d<=x.e);
+  return Object.assign(x,{days:rs.length,net:A.net,dn:delta(A.net,B.net),sess:A.sess,cvr:A.cvr,aov:A.aov,ord:A.orders,g,mer:g?A.net/g:null,npd:A.net/rs.length,em:em.length,sem:em.filter(isSaleEmail).length,lc:PAY.launches.filter(l=>l.d>=x.s&&l.d<=x.e).length});});
+ const pr=$('#cal-per');table(pr,[{k:'n',t:'Period',l:1,cls:'strong',f:x=>`<span class="pdot" style="background:${KC(x.k)}"></span>${esc(x.n)}`},{k:'type',t:'Type',l:1,f:x=>x.type==='Sale'?'<span class="salebadge">Sale</span>':'<span class="tag">Period</span>'},
+  {k:'s',t:'Dates',l:1,f:x=>fds(x.s)+' – '+fds(x.e)},{k:'days',t:'Days'},{k:'net',t:'Net sales',f:x=>m0(x.net)},{k:'dn',t:'vs 2024',f:x=>dcell(x.dn)},{k:'npd',t:'Net / day',f:x=>m0(x.npd)},{k:'sess',t:'Sessions',f:x=>n0(x.sess)},{k:'cvr',t:'CVR',f:x=>pc(x.cvr)},
+  {k:'aov',t:'AOV',f:x=>m2(x.aov)},{k:'g',t:'Google spend',f:x=>m0(x.g)},{k:'mer',t:'MER',f:x=>x.mer.toFixed(1)+'x'},{k:'em',t:'Emails',f:x=>x.em+(x.sem?` <span class="muted">(${x.sem} sale)</span>`:'')},{k:'lc',t:'Launches'}],blocks);
+ // make rows clickable (table may be re-sorted, so match by text)
+ pr.addEventListener('click',e=>{const tr=e.target.closest('tbody tr');if(!tr)return;const nm=tr.querySelector('td').textContent.trim();const x=blocks.find(b=>b.n===nm);if(x)openPeriod(x.s,x.e,x.n);});};
+
+/* ---------- period summary modal ---------- */
+function openPeriod(s0,e0,name){const rs=rng(s0,e0),A=agg(rs),B=agg(rs,'py_'),g=sum(rs,'g_cost'),pg=sum(rs,'py_g_cost');
+ const sl=SALES.find(x=>x.s===s0&&x.e===e0),per=PAY.periods.find(x=>x.s===s0&&x.e===e0);const sd=rs.filter(r=>saleOf(r.d)).length;
+ const em=(PAY.comms||[]).filter(c=>c.d>=s0&&c.d<=e0),sem=em.filter(isSaleEmail),L=PAY.launches.filter(l=>l.d>=s0&&l.d<=e0);
+ $('#mtitle').textContent=(sl?'Sale: ':per?'Trading period: ':'Full price: ')+name;
+ const mkk=(l,v,dd)=>`<div class="mk"><div class="l">${l}</div><div class="v">${v}</div>${dd||''}</div>`;
+ const dd=(v,inv)=>!ok(v)?'':`<div class="mdelta ${(inv?v<=0:v>=0)?'up':'down'}">${v>=0?'▲':'▼'} ${(Math.abs(v)*100).toFixed(0)}% YoY</div>`;
+ let h=`<div class="note"><b>${sl?'Markdown event':sd===rs.length?'All days on sale':sd?sd+' of '+rs.length+' days on sale':'Full price, no markdown'}</b> · ${fd(s0)} to ${fd(e0)} (${rs.length} days)${sl?'<br><span class="muted">Source: '+esc(sl.src)+'</span>':''}</div>
+ <div class="mgrid">${mkk('Net sales',m0(A.net),dd(delta(A.net,B.net)))}${mkk('2024 same dates',m0(B.net))}${mkk('Sessions',n0(A.sess),dd(delta(A.sess,B.sess)))}${mkk('Conversion rate',pc(A.cvr),dd(delta(A.cvr,B.cvr)))}
+ ${mkk('PY conversion',pc(B.cvr))}${mkk('Orders (est.)',n0(A.orders),dd(delta(A.orders,B.orders)))}${mkk('AOV',m2(A.aov),dd(delta(A.aov,B.aov)))}${mkk('Google spend',m0(g),dd(delta(g,pg)))}
+ ${mkk('MER',g?(A.net/g).toFixed(1)+'x':'—',dd(delta(A.net/g,B.net/pg)))}${mkk('Net sales per day',m0(A.net/rs.length))}${mkk('Returns',m0(A.ret),dd(delta(A.ret,B.ret),1))}${mkk('Emails sent',em.length)}${mkk('Launches',L.length)}${mkk('Share of Q4 net',pc(A.net/agg(D).net,1))}</div>`;
+ const best=rs.slice().sort((x,y)=>y.net-x.net).slice(0,3),worst=rs.slice().sort((x,y)=>x.net-y.net).slice(0,2);
+ h+=`<div class="blk"><h4>Best and weakest days</h4>${best.map(r=>`<div class="li"><b>${fd(r.d)}</b> · ${m0(r.net)} <span class="muted">(${dcellTxt(delta(r.net,r.py_net))})</span>${(LBYD[r.d]||[]).length?' · '+(LBYD[r.d]).map(l=>esc(l.name)).join(', '):''}</div>`).join('')}${worst.map(r=>`<div class="li muted">Weakest: ${fd(r.d)} · ${m0(r.net)}</div>`).join('')}</div>`;
+ h+=`<div class="blk"><h4>Sale emails sent during this period (${sem.length} of ${em.length})</h4>${sem.length?sem.map(c=>`<div class="li"><span class="tag">Email</span><span class="salebadge">Sale</span> <b>${esc(c.subj)}</b><br><span class="muted" style="font-size:12px">${fd(c.d)} ${esc(c.t)} · ${n0(c.rcpt)} sent · open ${pc(c.open,1)} · click ${pc(c.click,2)}</span></div>`).join(''):'<div class="li">No sale emails in this period</div>'}</div>`;
+ const other=em.filter(c=>!isSaleEmail(c));
+ if(other.length)h+=`<div class="blk"><h4>Other emails (${other.length})</h4>${other.map(c=>`<div class="li"><span class="tag">Email</span><b>${esc(c.subj)}</b> <span class="muted" style="font-size:12px">· ${fd(c.d)} · ${n0(c.rcpt)} sent · click ${pc(c.click,2)}</span></div>`).join('')}</div>`;
+ h+=`<div class="blk"><h4>Launches (${L.length})</h4>${L.length?`<div class="li">${L.map(l=>`<b>${fds(l.d)}</b> ${esc(l.name)}`).join(' · ')}</div>`:'<div class="li">None</div>'}</div>`;
+ if(HAS_CHAN){const rows=chanGroups(rs),T=rows.reduce((a,x)=>a+x.net,0);
+  h+=`<div class="blk"><h4>Channel contribution</h4><div class="tw" style="max-height:none"><table><thead><tr><th class="l">Channel</th><th>Net sales${EST}</th><th>Share</th><th>Sessions</th><th>Orders${EST}</th><th>CVR${EST}</th></tr></thead><tbody>${rows.map(x=>`<tr><td class="l strong"><span class="pdot" style="background:${GCOL(x.g)}"></span>${esc(x.g)}</td><td>${m0(x.net)}</td><td>${pc(T?x.net/T:null,1)}</td><td>${n0(x.sess)}</td><td>${n0(x.ord)}</td><td>${pc(x.sess?x.ord/x.sess:null)}</td></tr>`).join('')}</tbody></table></div><div class="src">Estimated the same way as the day pop-up.</div></div>`;}
+ $('#mbody').innerHTML=h;$('#mask').classList.add('on');$('#mx').focus();}
+
+/* ---- Performance ---- */
+const METRICS={net:['Net sales','money'],gross:['Gross sales','money'],sess:['Sessions','num'],cvr:['Conversion rate','pct'],aov:['AOV','money2'],orders:['Orders (est.)','num'],ret:['Returns / reversals','money'],disc:['Discounts','money']};
+let perfM='net',perfCmp='py_',perfSm=false;
+RENDER.perf=()=>{$('#t-perf').innerHTML=rail()+`<div class="sec"><div class="sech"><h2>Daily performance</h2><span class="sub">One metric at a time, against prior year</span></div>
+ <div class="ctl" id="pf-m"><span class="gl">Metric</span>${Object.entries(METRICS).map(([k,[l]])=>`<button class="chip ${k===perfM?'on':''}" data-k="${k}">${l}</button>`).join('')}</div>
+ <div class="ctl" id="pf-c"><span class="gl">Compare to</span><button class="chip on" data-c="py_">Same date 2024</button><button class="chip" data-c="wpy_">Same weekday 2024 (364 days)</button><span class="sp"></span>
+  <span class="gl">Smoothing</span><button class="chip" data-s="0" id="pf-s">7-day average</button></div>
+ <div class="legend"><span><i class="sw ln" style="background:var(--cy)"></i>2025</span><span><i class="sw dash"></i>2024 comparison</span><span><i class="sw ln" style="background:var(--bf)"></i>Retail calendar marker</span></div>
+ <div class="panel"><div class="chartbox"><canvas id="c-pf"></canvas></div></div><div class="kpis" id="pf-k" style="margin-top:10px"></div></div>
+ <div class="sec"><div class="sech"><h2>Daily detail</h2><span class="sub">Every day, every metric. Click a row to open the day</span></div><div id="pf-t"></div></div>`;
+ const draw=()=>{const [lab,fmt]=METRICS[perfM];const sm=a=>!perfSm?a:a.map((v,i)=>{const w=a.slice(Math.max(0,i-3),i+4).filter(ok);return w.length?w.reduce((x,y)=>x+y,0)/w.length:null;});
+  mk('c-pf',{type:'line',data:{labels:LABELS,datasets:[cyDs('2025 '+lab,sm(D.map(r=>r[perfM]))),pyDs('2024 '+lab,sm(D.map(r=>r[perfCmp+perfM])))]},
+   options:lineOpts(fmt,{onClick:(e,els)=>{if(els.length)openDay(D[els[0].index].d);},plugins:{markers:{days:evMarkers()},tooltip:{callbacks:{label:c=>' '+c.dataset.label+': '+(c.raw==null?'—':fmtBy[fmt](c.raw))}}}})});
+  const a=agg(D),b=agg(D.filter(r=>ok(r[perfCmp+'net'])),perfCmp);
+  $('#pf-k').innerHTML=Object.entries(METRICS).map(([k,[l,f]])=>kpi(l,fmtBy[f==='money2'?'money2':f==='pct'?'pct':f==='num'?'num':'money'](a[k]),(k==='ret'||k==='disc'?dspInv:dsp)(delta(a[k],b[k]),perfCmp==='py_'?'vs same date':'vs same weekday'))).join('');};
+ $('#pf-m').onclick=e=>{const k=e.target.dataset.k;if(!k)return;perfM=k;$('#pf-m').querySelectorAll('.chip').forEach(c=>c.classList.toggle('on',c.dataset.k===k));draw();};
+ $('#pf-c').onclick=e=>{const c=e.target.dataset.c;if(c){perfCmp=c;$('#pf-c').querySelectorAll('[data-c]').forEach(x=>x.classList.toggle('on',x.dataset.c===c));}
+  if(e.target.id==='pf-s'){perfSm=!perfSm;e.target.classList.toggle('on',perfSm);}draw();};
+ draw();
+ table($('#pf-t'),[{k:'d',t:'Date',l:1,cls:'strong',f:r=>fd(r.d)},{k:'net',t:'Net',f:r=>m0(r.net)},{k:'py_net',t:'Net 2024',f:r=>m0(r.py_net)},{k:'dn',t:'Δ',v:r=>delta(r.net,r.py_net),f:r=>dcell(delta(r.net,r.py_net))},
+  {k:'gross',t:'Gross',f:r=>m0(r.gross)},{k:'disc',t:'Disc.',f:r=>m0(r.disc)},{k:'ret',t:'Returns',f:r=>m0(r.ret)},{k:'sess',t:'Sessions',f:r=>n0(r.sess)},{k:'ds',t:'Δ sess',v:r=>delta(r.sess,r.py_sess),f:r=>dcell(delta(r.sess,r.py_sess))},
+  {k:'cvr',t:'CVR',f:r=>pc(r.cvr)},{k:'py_cvr',t:'CVR 2024',f:r=>pc(r.py_cvr)},{k:'aov',t:'AOV',f:r=>m2(r.aov)},{k:'orders',t:'Orders',f:r=>n0(r.orders)},
+  {k:'g_cost',t:'Ads spend',f:r=>m0(r.g_cost)},{k:'sc_clk',t:'Organic clicks',f:r=>n0(r.sc_clk)},{k:'lc',t:'Launches',v:r=>(LBYD[r.d]||[]).length,f:r=>(LBYD[r.d]||[]).length||''}],D,{click:'d',onclick:openDay,h:560});};
+
+/* ---- Rhythm & ramp ---- */
+RENDER.ramp=()=>{const ma=(k)=>D.map((r,i)=>{const w=D.slice(Math.max(0,i-3),i+4).map(x=>x[k]).filter(ok);return w.length===7?w.reduce((a,b)=>a+b,0)/7:null;});
+ const DOW=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+ const dowAgg=pre=>DOW.map(d=>{const rs=D.filter(r=>r.dow===d);return sum(rs,pre+'net')/rs.length;});
+ const dowCvr=pre=>DOW.map(d=>{const rs=D.filter(r=>r.dow===d);return sum(rs,pre+'orders')/sum(rs,pre+'sess');});
+ // weeks Sun-Sat
+ const wk={};D.forEach(r=>{const dt=dl(r.d);dt.setDate(dt.getDate()-dt.getDay());const k=dt.toISOString().slice(0,10);(wk[k]=wk[k]||[]).push(r);});
+ const weeks=Object.entries(wk).map(([k,rs])=>{const a=agg(rs),b=agg(rs,'py_');return {w:k,days:rs.length,s:rs[0].d,e:rs[rs.length-1].d,net:a.net,py:b.net,dn:delta(a.net,b.net),sess:a.sess,ds:delta(a.sess,b.sess),cvr:a.cvr,aov:a.aov,lc:rs.reduce((x,r)=>x+(LBYD[r.d]||[]).length,0),g:sum(rs,'g_cost')};});
+ $('#t-ramp').innerHTML=rail()+`<div class="sec"><div class="sech"><h2>The underlying trend</h2><span class="sub">Seven-day centred average of net sales removes day-of-week and launch-day noise</span></div>
+ <div class="legend"><span><i class="sw ln" style="background:var(--cy)"></i>2025, 7-day avg</span><span><i class="sw dash"></i>2024 same date, 7-day avg</span></div>
+ <div class="panel"><div class="chartbox"><canvas id="c-rm"></canvas></div></div></div>
+ <div class="sec"><div class="sech"><h2>Sessions trend</h2><span class="sub">Seven-day centred average</span></div><div class="panel"><div class="chartbox sm"><canvas id="c-rs"></canvas></div></div></div>
+ <div class="two"><div class="sec"><div class="sech"><h2>Day-of-week effect</h2><span class="sub">Average net sales per weekday</span></div>
+  <div class="legend"><span><i class="sw" style="background:var(--cy)"></i>2025</span><span><i class="sw" style="background:var(--py)"></i>2024</span></div><div class="panel"><div class="chartbox sm"><canvas id="c-dw"></canvas></div></div></div>
+  <div class="sec"><div class="sech"><h2>Conversion by weekday</h2><span class="sub">Orders ÷ sessions</span></div>
+  <div class="legend"><span><i class="sw" style="background:var(--cy)"></i>2025</span><span><i class="sw" style="background:var(--py)"></i>2024</span></div><div class="panel"><div class="chartbox sm"><canvas id="c-dc"></canvas></div></div></div></div>
+ <div class="note">Friday and Saturday carry <b>${pc((sum(D.filter(r=>r.dow==='Fri'||r.dow==='Sat'),'net'))/agg(D).net,0)}</b> of Q4 net sales. That is where Livestock's release calendar concentrates. Sunday and Monday are the quietest days, which makes them the cheapest window for brand and story content.</div>
+ <div class="sec"><div class="sech"><h2>Weekly shape</h2><span class="sub">Sunday to Saturday weeks, same-date YoY</span></div><div id="rm-t"></div></div>`;
+ mk('c-rm',{type:'line',data:{labels:LABELS,datasets:[cyDs('2025 7-day avg',ma('net')),pyDs('2024 7-day avg',ma('py_net'))]},options:lineOpts('money',{plugins:{markers:{days:evMarkers()}}})});
+ mk('c-rs',{type:'line',data:{labels:LABELS,datasets:[cyDs('2025 sessions',ma('sess')),pyDs('2024 sessions',ma('py_sess'))]},options:lineOpts('num')});
+ mk('c-dw',{type:'bar',data:{labels:DOW,datasets:[{label:'2025',data:dowAgg(''),backgroundColor:css('--cy')},{label:'2024',data:dowAgg('py_'),backgroundColor:css('--py')}]},options:barOpts('money')});
+ mk('c-dc',{type:'bar',data:{labels:DOW,datasets:[{label:'2025',data:dowCvr(''),backgroundColor:css('--cy')},{label:'2024',data:dowCvr('py_'),backgroundColor:css('--py')}]},options:barOpts('pct')});
+ table($('#rm-t'),[{k:'w',t:'Week of',l:1,cls:'strong',f:r=>fds(r.s)+' – '+fds(r.e)},{k:'net',t:'Net',f:r=>m0(r.net)},{k:'py',t:'2024',f:r=>m0(r.py)},{k:'dn',t:'Δ net',f:r=>dcell(r.dn)},
+  {k:'sess',t:'Sessions',f:r=>n0(r.sess)},{k:'ds',t:'Δ sess',f:r=>dcell(r.ds)},{k:'cvr',t:'CVR',f:r=>pc(r.cvr)},{k:'aov',t:'AOV',f:r=>m2(r.aov)},{k:'g',t:'Ads spend',f:r=>m0(r.g)},{k:'lc',t:'Launches',f:r=>r.lc}],weeks);};
+
+/* ---- BFCM ---- */
+RENDER.bfcm=()=>{const bf=DI['2025-11-28'];const run=rng('2025-11-21','2025-12-01');
+ const a=agg(run),bw=agg(run.filter(r=>ok(r.wpy_net)),'wpy_'),bd=agg(run,'py_');
+ const lab=run.map(r=>fd(r.d));
+ $('#t-bfcm').innerHTML=rail()+`<div class="sec"><div class="sech"><h2>Black Friday · 28 November 2025</h2><span class="sub">Compared with Black Friday 2024 (29 Nov), same weekday</span></div>
+ <div class="kpis">${kpi('Net sales',m0(bf.net),dsp(delta(bf.net,bf.wpy_net),'vs BF 2024'))}${kpi('Sessions',n0(bf.sess),dsp(delta(bf.sess,bf.wpy_sess),'vs BF 2024'))}
+ ${kpi('Conversion',pc(bf.cvr),dsp(delta(bf.cvr,bf.wpy_cvr),'vs BF 2024'))}${kpi('AOV',m2(bf.aov),dsp(delta(bf.aov,bf.wpy_aov),'vs BF 2024'))}
+ ${kpi('Orders (est.)',n0(bf.orders),dsp(delta(bf.orders,bf.wpy_orders),'vs BF 2024'))}${kpi('Google Ads spend',m0(bf.g_cost),dsp(delta(bf.g_cost,bf.py_g_cost),'vs BF 2024'))}
+ ${kpi('Share of Q4 net',pc(bf.net/agg(D).net,1),'<span class="d">1 day of 92</span>')}${kpi('Launch',esc('AJ4 Black Cat'),'<span class="d">'+n0(DI['2025-11-28']&&PAY.launches.find(l=>l.d==='2025-11-28').ke)+' PDP key events</span>')}</div></div>
+ <div class="sec"><div class="sech"><h2>The BFCM run · 21 Nov – 1 Dec</h2><span class="sub">Eleven days, weekday-aligned to 22 Nov – 2 Dec 2024</span></div>
+ <div class="kpis">${kpi('Net sales',kk(a.net),dsp(delta(a.net,bw.net),'vs weekday'))}${kpi('Same-date view',kk(bd.net),dsp(delta(a.net,bd.net),'vs same date'))}
+ ${kpi('Sessions',n0(a.sess),dsp(delta(a.sess,bw.sess),'vs weekday'))}${kpi('Conversion',pc(a.cvr),dsp(delta(a.cvr,bw.cvr),'vs weekday'))}${kpi('AOV',m2(a.aov),dsp(delta(a.aov,bw.aov),'vs weekday'))}
+ ${kpi('Returns',kk(a.ret),dspInv(delta(a.ret,bw.ret),'vs weekday'))}</div>
+ <div class="legend" style="margin-top:14px"><span><i class="sw" style="background:var(--cy)"></i>2025</span><span><i class="sw" style="background:var(--py)"></i>2024, same weekday</span></div>
+ <div class="panel"><div class="chartbox"><canvas id="c-bf"></canvas></div></div></div>
+ <div class="two"><div class="sec"><div class="sech"><h2>Conversion through the run</h2></div><div class="legend"><span><i class="sw ln" style="background:var(--cy)"></i>2025</span><span><i class="sw dash"></i>2024 same weekday</span></div><div class="panel"><div class="chartbox sm"><canvas id="c-bfc"></canvas></div></div></div>
+ <div class="sec"><div class="sech"><h2>Google Ads spend through the run</h2></div><div class="legend"><span><i class="sw ln" style="background:var(--cy)"></i>2025</span><span><i class="sw dash"></i>2024 same weekday</span></div><div class="panel"><div class="chartbox sm"><canvas id="c-bfg"></canvas></div></div></div></div>
+ <div class="note"><b>Read-out.</b> The run grew on both traffic and conversion. Black Friday's ${m0(bf.net)} came with ${pc(bf.cvr)} conversion, the highest of the quarter, and paired with the AJ4 "Black Cat" release. 25 Nov (${kk(DI['2025-11-25'].net)}) and 21 Nov (${kk(DI['2025-11-21'].net)}) show the early-access and launch days pulling demand forward. Note 2024's Black Friday fell on 29 Nov, so the same-date view compares Black Friday with US Thanksgiving 2024 and overstates the growth on the day.</div>
+ <div class="sec"><div class="sech"><h2>Daily detail</h2></div><div id="bf-t"></div></div>`;
+ mk('c-bf',{type:'bar',data:{labels:lab,datasets:[{label:'2025',data:run.map(r=>r.net),backgroundColor:css('--cy')},{label:'2024 same weekday',data:run.map(r=>r.wpy_net),backgroundColor:css('--py')}]},options:barOpts('money',false,{onClick:(e,els)=>{if(els.length)openDay(run[els[0].index].d);}})});
+ mk('c-bfc',{type:'line',data:{labels:lab,datasets:[cyDs('2025',run.map(r=>r.cvr),{pointRadius:3}),pyDs('2024',run.map(r=>r.wpy_cvr),{pointRadius:3})]},options:lineOpts('pct')});
+ mk('c-bfg',{type:'line',data:{labels:lab,datasets:[cyDs('2025',run.map(r=>r.g_cost),{pointRadius:3}),pyDs('2024',run.map(r=>r.py_g_cost),{pointRadius:3})]},options:lineOpts('money')});
+ table($('#bf-t'),[{k:'d',t:'Date',l:1,cls:'strong',f:r=>fd(r.d)},{k:'net',t:'Net',f:r=>m0(r.net)},{k:'wpy_net',t:'2024 weekday',f:r=>m0(r.wpy_net)},{k:'dn',t:'Δ',v:r=>delta(r.net,r.wpy_net),f:r=>dcell(delta(r.net,r.wpy_net))},
+  {k:'sess',t:'Sessions',f:r=>n0(r.sess)},{k:'cvr',t:'CVR',f:r=>pc(r.cvr)},{k:'aov',t:'AOV',f:r=>m2(r.aov)},{k:'g_cost',t:'Ads spend',f:r=>m0(r.g_cost)},
+  {k:'l',t:'Launches',l:1,cls:'wrap',f:r=>(LBYD[r.d]||[]).map(l=>esc(l.name)).join(' · ')||'—'}],run,{click:'d',onclick:openDay});};
+
+/* ---- Channels ---- */
+RENDER.chan=()=>{const C=PAY.channels.filter(c=>c.rev>0||c.users>100);const tot=PAY.channels.reduce((a,c)=>a+(c.rev||0),0);
+ $('#t-chan').innerHTML=`${HAS_SHOPCH?shopChanHTML():''}<div class="sec"><div class="sech"><h2>GA4 channel contribution</h2><span class="sub">GA4 · 1 Oct – 31 Dec 2025. Charts and table below use first-user channel</span></div>
+ <div class="kpis">${kpi('GA4 revenue',kk(tot),'<span class="d">Shopify net: '+kk(agg(D).net)+'</span>')}${kpi('Transactions',n0(PAY.ga_total.tx),'')}${kpi('Total users',n0(PAY.ga_total.users),'')}${kpi('New users',n0(PAY.ga_total.newu),'')}
+ ${kpi('Direct share',pc(C.find(c=>c.ch==='Direct').rev/tot,1),'<span class="d">of GA4 revenue</span>')}${kpi('Paid share',pc(C.filter(c=>/^Paid|Cross/.test(c.ch)).reduce((a,c)=>a+c.rev,0)/tot,1),'<span class="d">Shopping + Search + Social + PMax</span>')}</div></div>
+ ${HAS_CHAN?`<div class="sec"><div class="sech"><h2>Channel contribution over time</h2><span class="sub">GA4 revenue by session channel, Sunday to Saturday weeks</span></div>
+ <div class="ctl" id="cht-m"><span class="gl">Show</span><button class="chip on" data-m="rev">Revenue</button><button class="chip" data-m="share">Share of revenue</button><button class="chip" data-m="sess">Sessions</button></div>
+ <div class="legend">${[...CH_TOP,'Other'].map(c=>`<span><i class="sw" style="background:${chColor(c)}"></i>${esc(c)}</span>`).join('')}</div>
+ <div class="panel"><div class="chartbox"><canvas id="c-cht"></canvas></div></div>
+ <div class="note" id="cht-n"></div></div>`:''}
+ <div class="two"><div class="sec"><div class="sech"><h2>Revenue by channel</h2></div><div class="panel"><div class="chartbox"><canvas id="c-cr"></canvas></div></div></div>
+ <div class="sec"><div class="sech"><h2>Revenue per new user</h2><span class="sub">Revenue ÷ new users acquired by the channel</span></div><div class="panel"><div class="chartbox"><canvas id="c-cu"></canvas></div></div></div></div>
+ <div class="note">Direct and organic search account for <b>${pc((C.find(c=>c.ch==='Direct').rev+C.find(c=>c.ch==='Organic Search').rev)/tot,0)}</b> of revenue. Livestock's demand is brand-led. Email returns <b>${m2(C.find(c=>c.ch==='Email').rev/C.find(c=>c.ch==='Email').newu)}</b> per new user, ahead of Direct and Organic Search. Paid Social brings volume but only <b>${m2(C.find(c=>c.ch==='Paid Social').rev/C.find(c=>c.ch==='Paid Social').newu)}</b>, the lowest return per user among paid channels.</div>
+ <div class="sec"><div class="sech"><h2>Channel detail</h2></div><div id="ch-t"></div></div>`;
+ if(HAS_SHOPCH)shopChanDraw();
+ if(HAS_CHAN){const wk={};Object.entries(PAY.chan_daily).forEach(([d,rs])=>{const dt=dl(d);dt.setDate(dt.getDate()-dt.getDay());const k=dt.toISOString().slice(0,10);
+  const w=wk[k]=wk[k]||{};rs.forEach(x=>{const c=CH_TOP.includes(x.ch)?x.ch:'Other';w[c]=w[c]||{rev:0,sess:0};w[c].rev+=x.rev||0;w[c].sess+=x.sess||0;});});
+  const ks=Object.keys(wk).sort(),series=[...CH_TOP,'Other'];
+  const draw=m=>{mk('c-cht',{type:'bar',data:{labels:ks.map(k=>'w/c '+fds(k)),datasets:series.map(c=>({label:c,data:ks.map(k=>{const w=wk[k],v=(w[c]||{})[m==='sess'?'sess':'rev']||0;
+    if(m!=='share')return v;const t=Object.values(w).reduce((a,x)=>a+x.rev,0);return t?v/t:0;}),backgroundColor:chColor(c),borderColor:css('--panel'),borderWidth:{top:2},borderRadius:0,maxBarThickness:46}))},
+   options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},scales:{x:{stacked:true,grid:{display:false}},y:{stacked:true,max:m==='share'?1:undefined,grid:{color:css('--grid')},ticks:{callback:v=>m==='share'?pc(v,0):m==='sess'?n0(v):kk(v)}}},
+    plugins:{tooltip:{itemSort:(a,b)=>b.raw-a.raw,callbacks:{label:c=>' '+c.dataset.label+': '+(m==='share'?pc(c.raw,1):m==='sess'?n0(c.raw):m0(c.raw))}}}}});};
+  draw('rev');$('#cht-m').onclick=e=>{const m=e.target.dataset.m;if(!m)return;$('#cht-m').querySelectorAll('.chip').forEach(c=>c.classList.toggle('on',c.dataset.m===m));draw(m);};
+  const per=(s0,e0)=>{const t={};Object.entries(PAY.chan_daily).forEach(([d,rs])=>{if(d<s0||d>e0)return;rs.forEach(x=>t[x.ch]=(t[x.ch]||0)+(x.rev||0));});const tot=Object.values(t).reduce((a,b)=>a+b,0);return {t,tot};};
+  const o=per('2025-10-01','2025-10-31'),b=per('2025-11-13','2025-12-03'),x=per('2025-12-24','2025-12-31');
+  const sh=(p,c)=>pc(p.tot?(p.t[c]||0)/p.tot:null,0);
+  $('#cht-n').innerHTML=`Email's share of GA4 revenue went from <b>${sh(o,'Email')}</b> in October to <b>${sh(b,'Email')}</b> during the Black Friday sale (13 Nov – 3 Dec) and <b>${sh(x,'Email')}</b> in Boxing Week. Paid Shopping went ${sh(o,'Paid Shopping')} → ${sh(b,'Paid Shopping')} → ${sh(x,'Paid Shopping')}. Direct stays the largest channel throughout (${sh(o,'Direct')} → ${sh(b,'Direct')} → ${sh(x,'Direct')}).`;}
+ mk('c-cr',{type:'bar',data:{labels:C.map(c=>c.ch),datasets:[{label:'Revenue',data:C.map(c=>c.rev),backgroundColor:css('--cy')}]},options:barOpts('money',true)});
+ const U=C.filter(c=>c.newu>1000).map(c=>({ch:c.ch,v:c.rev/c.newu})).sort((a,b)=>b.v-a.v);
+ mk('c-cu',{type:'bar',data:{labels:U.map(c=>c.ch),datasets:[{label:'Revenue per new user',data:U.map(c=>c.v),backgroundColor:css('--cy')}]},options:barOpts('money2',true)});
+ table($('#ch-t'),[{k:'ch',t:'Channel',l:1,cls:'strong'},{k:'rev',t:'Revenue',f:r=>m0(r.rev)},{k:'sh',t:'Share',v:r=>r.rev/tot,f:r=>pc(r.rev/tot,1)},{k:'tx',t:'Transactions',f:r=>n0(r.tx)},
+  {k:'aov',t:'Rev / tx',v:r=>r.tx?r.rev/r.tx:null,f:r=>r.tx?m2(r.rev/r.tx):'—'},{k:'users',t:'Total users',f:r=>n0(r.users)},{k:'newu',t:'New users',f:r=>n0(r.newu)},{k:'retu',t:'Returning',f:r=>n0(r.retu)},
+  {k:'rpu',t:'Rev / new user',v:r=>r.newu?r.rev/r.newu:null,f:r=>r.newu?m2(r.rev/r.newu):'—'},{k:'ke',t:'Key events',f:r=>n0(r.ke)},{k:'ker',t:'User KE rate',f:r=>pc(r.ker,1)},{k:'eng',t:'Eng. sess / user',f:r=>ok(r.eng)?r.eng.toFixed(2):'—'}],C);};
+
+function shopChanHTML(){const G=GROUPS.map(g=>SHG[g]).filter(x=>x.n),S=sum(G,'sales'),O=sum(G,'ord'),SS=sum(G,'sess'),NO=sum(G,'newo'),RO=sum(G,'reto');
+ return `<div class="sec"><div class="sech"><h2>Shopify channel performance</h2><span class="sub">Last click by referring platform · 1 Oct – 31 Dec 2025 · whole quarter only</span></div>
+ <div class="kpis">${kpi('Attributed sales',kk(S),'<span class="d">net sales '+kk(agg(D).net)+'</span>')}${kpi('Orders',n0(O),'<span class="d">actual Shopify orders</span>')}${kpi('Sessions',n0(SS),'')}${kpi('Conversion rate',pc(O/SS),'')}${kpi('AOV',m2(S/O),'')}
+ ${kpi('New-customer orders',pc(NO/(NO+RO),1),'<span class="d">'+n0(NO)+' of '+n0(NO+RO)+'</span>')}</div>
+ <div class="two" style="margin-top:14px"><div><div class="legend"><span>Sales by channel</span></div><div class="panel"><div class="chartbox sm"><canvas id="c-shs"></canvas></div></div></div>
+ <div><div class="legend"><span><i class="sw" style="background:var(--s1)"></i>Orders from new customers</span><span><i class="sw" style="background:var(--s2)"></i>Returning</span></div><div class="panel"><div class="chartbox sm"><canvas id="c-shn"></canvas></div></div></div></div>
+ <div id="sh-t" style="margin-top:12px"></div>
+ <div class="note" id="sh-n" style="margin-top:12px"></div>
+ <div class="sech" style="margin-top:6px"><h2 style="font-size:15px">Every referring platform</h2><span class="sub">Search and sort</span></div>
+ <div class="ctl"><input type="text" id="shq" placeholder="Search platforms" style="min-width:240px"></div><div id="sh-p"></div></div>`;}
+function shopChanDraw(){const G=GROUPS.map(g=>SHG[g]).filter(x=>x.n).sort((a,b)=>b.sales-a.sales),S=sum(G,'sales');
+ mk('c-shs',{type:'bar',data:{labels:G.map(x=>x.g),datasets:[{label:'Sales',data:G.map(x=>x.sales),backgroundColor:G.map(x=>GCOL(x.g))}]},options:barOpts('money',true)});
+ mk('c-shn',{type:'bar',data:{labels:G.map(x=>x.g),datasets:[{label:'New',data:G.map(x=>x.newo/(x.newo+x.reto||1)),backgroundColor:css('--s1'),borderColor:css('--panel'),borderWidth:{right:2},borderRadius:0},{label:'Returning',data:G.map(x=>x.reto/(x.newo+x.reto||1)),backgroundColor:css('--s2'),borderRadius:0}]},
+  options:barOpts('pct1',true,{scales:{y:{stacked:true,grid:{display:false}},x:{stacked:true,max:1,grid:{color:css('--grid')},ticks:{callback:v=>pc(v,0)}}},plugins:{tooltip:{callbacks:{label:c=>' '+c.dataset.label+': '+pc(c.raw,1)}}}})});
+ table($('#sh-t'),[{k:'g',t:'Channel',l:1,cls:'strong',f:x=>`<span class="pdot" style="background:${GCOL(x.g)}"></span>${esc(x.g)}`},{k:'sales',t:'Sales',f:x=>m0(x.sales)},{k:'sh',t:'Share',v:x=>x.sales/S,f:x=>pc(x.sales/S,1)},{k:'sess',t:'Sessions',f:x=>n0(x.sess)},
+  {k:'ord',t:'Orders',f:x=>n0(x.ord)},{k:'cvr',t:'CVR',v:x=>x.sess?x.ord/x.sess:null,f:x=>pc(x.sess?x.ord/x.sess:null)},{k:'aov',t:'AOV',v:x=>x.ord?x.sales/x.ord:null,f:x=>x.ord?m2(x.sales/x.ord):'—'},{k:'spo',t:'Sales / session',v:x=>x.sess?x.sales/x.sess:null,f:x=>x.sess?m2(x.sales/x.sess):'—'},
+  {k:'newo',t:'New-cust. orders',f:x=>n0(x.newo)},{k:'nsh',t:'% new',v:x=>x.newo/(x.newo+x.reto||1),f:x=>pc(x.newo/(x.newo+x.reto||1),0)}],G);
+ const g=n=>SHG[n],cv=x=>x.ord/x.sess;
+ $('#sh-n').innerHTML=`<b>Read-out.</b> Direct drives the most sessions (${n0(g('Direct').sess)}) but converts at only <b>${pc(cv(g('Direct')))}</b>. Organic and paid Google both convert at ~${pc(cv(g('Organic search')),1)}–${pc(cv(g(GROUPS[0])),1)}. Paid Google brings the highest share of <b>new customers</b> (${pc(g(GROUPS[0]).newo/(g(GROUPS[0]).newo+g(GROUPS[0]).reto),0)} of its orders). Klaviyo email is a returning-customer channel (${pc(g('Email (Klaviyo)').reto/(g('Email (Klaviyo)').newo+g('Email (Klaviyo)').reto),0)} returning) with a <b>${m2(g('Email (Klaviyo)').sales/g('Email (Klaviyo)').ord)}</b> AOV. Meta sends ${n0(g('Meta').sess)} sessions for ${kk(g('Meta').sales)} in sales, a ${pc(cv(g('Meta')))} conversion rate.`;
+ const P=PAY.shop_ch.map(x=>Object.assign({grp:shGroup(x)},x));
+ const cols=[{k:'plat',t:'Platform',l:1,cls:'strong'},{k:'ch',t:'Channel',l:1},{k:'type',t:'Type',l:1},{k:'grp',t:'Group',l:1,f:x=>`<span class="pdot" style="background:${GCOL(x.grp)}"></span>${esc(x.grp)}`},{k:'sess',t:'Sessions',f:x=>n0(x.sess)},{k:'sales',t:'Sales',f:x=>m0(x.sales)},{k:'ord',t:'Orders',f:x=>n0(x.ord)},
+  {k:'cvr',t:'CVR',v:x=>x.sess?x.ord/x.sess:null,f:x=>pc(x.sess?x.ord/x.sess:null)},{k:'aov',t:'AOV',v:x=>x.ord?x.sales/x.ord:null,f:x=>x.ord?m2(x.sales/x.ord):'—'},{k:'newo',t:'New',f:x=>n0(x.newo)},{k:'reto',t:'Returning',f:x=>n0(x.reto)}];
+ const draw=q=>table($('#sh-p'),cols,P.filter(x=>!q||(x.plat+' '+x.ch+' '+x.type).toLowerCase().includes(q)),{h:420});draw('');$('#shq').oninput=e=>draw(e.target.value.toLowerCase().trim());}
+
+/* ---- Products ---- */
+RENDER.prod=()=>{const B=PAY.brands.slice(0,15),P=PAY.products;
+ $('#t-prod').innerHTML=`<div class="sec"><div class="sech"><h2>Brand demand</h2><span class="sub">GA4 product page views summed by brand · ${n0(P.length)} top product pages</span></div>
+ <div class="two"><div class="panel"><div class="chartbox" style="height:460px"><canvas id="c-bv"></canvas></div></div><div class="panel"><div class="chartbox" style="height:460px"><canvas id="c-bk"></canvas></div></div></div>
+ <div class="src">Left: product page views. Right: key events per 100 views (intent), brands with 5,000+ views.</div></div>
+ <div class="note">ASICS was the most-viewed brand on site (${n0(B[0].v)} PDP views), ahead of Nike. Jordan converts attention best: ${pc(PAY.brands.find(b=>b.b==='Jordan').ke/PAY.brands.find(b=>b.b==='Jordan').v,1)} key events per view against ${pc(PAY.brands.find(b=>b.b==='ASICS').ke/PAY.brands.find(b=>b.b==='ASICS').v,1)} for ASICS. This is driven by launch-day demand on AJ1, AJ4, AJ11 and the Travis Scott Jumpman Jack.</div>
+ <div class="sec"><div class="sech"><h2>Site sections</h2><span class="sub">Top non-product pages by views</span></div><div id="kp-t"></div></div>
+ <div class="sec"><div class="sech"><h2>Product page ledger</h2><span class="sub">Search and sort</span></div>
+ <div class="ctl"><input type="text" id="pq" placeholder="Search products" style="min-width:260px"><select id="pb"><option value="">All brands</option>${PAY.brands.map(b=>`<option>${esc(b.b)}</option>`).join('')}</select></div><div id="p-t"></div></div>`;
+ mk('c-bv',{type:'bar',data:{labels:B.map(b=>b.b),datasets:[{label:'PDP views',data:B.map(b=>b.v),backgroundColor:css('--cy')}]},options:barOpts('num',true)});
+ const K=PAY.brands.filter(b=>b.v>=5000).map(b=>({b:b.b,v:b.ke/b.v*100})).sort((a,b)=>b.v-a.v);
+ mk('c-bk',{type:'bar',data:{labels:K.map(b=>b.b),datasets:[{label:'Key events per 100 views',data:K.map(b=>b.v),backgroundColor:css('--cy')}]},options:barOpts('num',true,{plugins:{tooltip:{callbacks:{label:c=>' '+c.raw.toFixed(1)+' key events per 100 views'}}},scales:{y:{grid:{display:false}},x:{beginAtZero:true,grid:{color:css('--grid')}}}})});
+ table($('#kp-t'),[{k:'p',t:'Page',l:1,cls:'strong'},{k:'v',t:'Views',f:r=>n0(r.v)},{k:'u',t:'Users',f:r=>n0(r.u)},{k:'ke',t:'Key events',f:r=>n0(r.ke)}],PAY.keypages.slice(0,20),{h:380});
+ const cols=[{k:'p',t:'Product',l:1,cls:'wrap'},{k:'b',t:'Brand',l:1},{k:'v',t:'Views',f:r=>n0(r.v)},{k:'u',t:'Users',f:r=>n0(r.u)},{k:'ke',t:'Key events',f:r=>n0(r.ke)},{k:'kr',t:'KE / view',v:r=>r.v?r.ke/r.v:null,f:r=>pc(r.v?r.ke/r.v:null,1)}];
+ const draw=()=>{const q=$('#pq').value.toLowerCase().trim(),b=$('#pb').value;table($('#p-t'),cols,P.filter(p=>(!b||p.b===b)&&(!q||p.p.toLowerCase().includes(q))),{h:560});};
+ draw();$('#pq').oninput=draw;$('#pb').onchange=draw;};
+
+/* ---- Paid search ---- */
+function renderPaidPerf(){const A=PAY.ads;const gc=sum(D,'g_cost'),pgc=sum(D,'py_g_cost'),gk=sum(D,'g_clk'),pgk=sum(D,'py_g_clk'),gv=sum(D,'g_conv'),pgv=sum(D,'py_g_conv');
+ const net=agg(D).net,pnet=agg(D,'py_').net;
+ $('#paid-body').innerHTML=`<div class="sec"><div class="sech"><h2>Google Ads · 1 Oct – 31 Dec</h2><span class="sub">Versus prior year, weekday-aligned by Google Ads</span></div>
+ <div class="kpis">${kpi('Spend',kk(gc),dsp(delta(gc,pgc)))}${kpi('Clicks',n0(gk),dsp(delta(gk,pgk)))}${kpi('Conversions',n0(gv),dsp(delta(gv,pgv)))}
+ ${kpi('Cost / click',m2(gc/gk),dspInv(delta(gc/gk,pgc/pgk)))}${kpi('Cost / conv.',m2(gc/gv),dspInv(delta(gc/gv,pgc/pgv)))}
+ ${kpi('Spend as % of net',pc(gc/net,2),'<span class="d">2024: '+pc(pgc/pnet,2)+'</span>')}${kpi('MER (net ÷ spend)',(net/gc).toFixed(1)+'x','<span class="d">2024: '+(pnet/pgc).toFixed(1)+'x</span>')}</div></div>
+ <div class="two"><div class="sec"><div class="sech"><h2>Daily spend</h2></div><div class="legend"><span><i class="sw ln" style="background:var(--cy)"></i>2025</span><span><i class="sw dash"></i>2024</span></div><div class="panel"><div class="chartbox sm"><canvas id="c-gs"></canvas></div></div></div>
+ <div class="sec"><div class="sech"><h2>Daily conversions</h2></div><div class="legend"><span><i class="sw ln" style="background:var(--cy)"></i>2025</span><span><i class="sw dash"></i>2024</span></div><div class="panel"><div class="chartbox sm"><canvas id="c-gv"></canvas></div></div></div></div>
+ <div class="sec"><div class="sech"><h2>Cost per conversion</h2><span class="sub">Daily</span></div><div class="legend"><span><i class="sw ln" style="background:var(--cy)"></i>2025</span><span><i class="sw dash"></i>2024</span></div><div class="panel"><div class="chartbox sm"><canvas id="c-gc"></canvas></div></div></div>
+ <div class="note"><b>Read-out.</b> Spend more than doubled. Nearly all of the increase is the new <b>shop_catchall_footwear</b> Shopping campaign, created 23 Sep (per its campaign group) and now paused: ${m0(20013.32)} for 1,277 conversions at ${m2(15.67)}. That is 2.7× the cost per conversion of the existing <b>shop-inline</b> campaign (${m2(5.88)}). Branded search spend tripled to ${m0(1622.85)}, and branded keyword CTR fell from ~72% to ~46%. That points to more competition on "livestock" and "deadstock" terms. Much of the Shopping spend went to generic ASICS and Salomon queries and competitor names (JD Sports, Foot Locker). The search term export reports no conversions at query level, so their return can't be judged from this file.</div>
+ <div class="sec"><div class="sech"><h2>Campaigns</h2></div><div id="g-camp"></div></div>
+ <div class="two"><div class="sec"><div class="sech"><h2>Devices</h2></div><div id="g-dev"></div></div><div class="sec"><div class="sech"><h2>Branded keywords</h2></div><div id="g-kw"></div></div></div>
+ <div class="sec"><div class="sech"><h2>Impressions by day and hour</h2><span class="sub">Darker = more impressions. Peak is 5–8 pm</span></div><div class="panel" style="overflow-x:auto"><div class="hm" id="g-hm"></div></div></div>
+ <div class="two"><div class="sec"><div class="sech"><h2>Top search terms</h2><span class="sub">By impressions</span></div><div id="g-sq"></div></div><div class="sec"><div class="sech"><h2>Search words</h2><span class="sub">Single words across all queries</span></div><div id="g-w"></div></div></div>
+ <div class="two"><div class="sec"><div class="sech"><h2>Age</h2><span class="sub">Impressions, known ages</span></div><div class="panel"><div class="chartbox xs"><canvas id="g-age"></canvas></div></div></div>
+ <div class="sec"><div class="sech"><h2>Gender</h2><span class="sub">Impressions, known gender</span></div><div class="panel"><div class="chartbox xs"><canvas id="g-gen"></canvas></div></div></div></div>`;
+ mk('c-gs',{type:'line',data:{labels:LABELS,datasets:[cyDs('2025 spend',D.map(r=>r.g_cost)),pyDs('2024 spend',D.map(r=>r.py_g_cost))]},options:lineOpts('money',{plugins:{markers:{days:evMarkers()}}})});
+ mk('c-gv',{type:'line',data:{labels:LABELS,datasets:[cyDs('2025 conv.',D.map(r=>r.g_conv)),pyDs('2024 conv.',D.map(r=>r.py_g_conv))]},options:lineOpts('num')});
+ mk('c-gc',{type:'line',data:{labels:LABELS,datasets:[cyDs('2025 cost/conv.',D.map(r=>r.g_conv?r.g_cost/r.g_conv:null)),pyDs('2024 cost/conv.',D.map(r=>r.py_g_conv?r.py_g_cost/r.py_g_conv:null))]},options:lineOpts('money2')});
+ table($('#g-camp'),[{k:'name',t:'Campaign',l:1,cls:'strong'},{k:'status',t:'Status',l:1},{k:'cost',t:'Cost',f:r=>m2(r.cost)},{k:'py_cost',t:'Cost 2024',f:r=>m2(r.py_cost)},{k:'conv',t:'Conv.',f:r=>n0(r.conv)},{k:'py_conv',t:'Conv. 2024',f:r=>n0(r.py_conv)},{k:'cpa',t:'Cost / conv.',f:r=>m2(r.cpa)},{k:'py_cpa',t:'2024',f:r=>m2(r.py_cpa)}],A.campaigns);
+ table($('#g-dev'),[{k:'dev',t:'Device',l:1,cls:'strong'},{k:'cost',t:'Cost',f:r=>m0(r.cost)},{k:'dc',t:'Δ',v:r=>delta(r.cost,r.py_cost),f:r=>dcell(delta(r.cost,r.py_cost))},{k:'clk',t:'Clicks',f:r=>n0(r.clk)},{k:'conv',t:'Conv.',f:r=>n0(r.conv)},{k:'cpa',t:'Cost / conv.',v:r=>r.conv?r.cost/r.conv:null,f:r=>r.conv?m2(r.cost/r.conv):'—'}],A.devices.filter(d=>d.cost>0));
+ table($('#g-kw'),[{k:'kw',t:'Keyword',l:1,cls:'strong'},{k:'cost',t:'Cost',f:r=>m2(r.cost)},{k:'clk',t:'Clicks',f:r=>n0(r.clk)},{k:'py_clk',t:'2024',f:r=>n0(r.py_clk)},{k:'ctr',t:'CTR',f:r=>ok(r.ctr)?r.ctr.toFixed(1)+'%':'—'},{k:'py_ctr',t:'CTR 2024',f:r=>ok(r.py_ctr)?r.py_ctr.toFixed(1)+'%':'—'}],A.keywords);
+ const DAYS=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'],HRS=[...Array(24)].map((_,i)=>i===0?'12 AM':i<12?i+' AM':i===12?'12 PM':(i-12)+' PM');
+ const hmx=Math.max(...A.dayhour.map(x=>x.imp));let hm='<div></div>'+HRS.map((h,i)=>`<div>${i%3===0?h.replace(' ',''):''}</div>`).join('');
+ DAYS.forEach(d=>{hm+=`<div class="lab">${d.slice(0,3)}</div>`;HRS.forEach(h=>{const x=A.dayhour.find(z=>z.day===d&&z.hr===h);const t=x?x.imp/hmx:0;
+  hm+=`<div title="${d} ${h}: ${n0(x&&x.imp)} impressions (2024: ${n0(x&&x.py_imp)})" style="background:color-mix(in oklab, ${css('--heat0')}, ${css('--heat2')} ${Math.round(t*100)}%)"></div>`;});});
+ $('#g-hm').innerHTML=hm;
+ table($('#g-sq'),[{k:'q',t:'Search term',l:1,cls:'strong'},{k:'imp',t:'Impr.',f:r=>n0(r.imp)},{k:'clk',t:'Clicks',f:r=>n0(r.clk)},{k:'cost',t:'Cost',f:r=>m2(r.cost)},{k:'cpc',t:'CPC',v:r=>r.clk?r.cost/r.clk:null,f:r=>r.clk?m2(r.cost/r.clk):'—'}],A.searches,{h:420});
+ table($('#g-w'),[{k:'w',t:'Word',l:1,cls:'strong'},{k:'imp',t:'Impr.',f:r=>n0(r.imp)},{k:'clk',t:'Clicks',f:r=>n0(r.clk)},{k:'cost',t:'Cost',f:r=>m2(r.cost)},{k:'top',t:'Top queries',l:1}],A.words,{h:420});
+ mk('g-age',{type:'bar',data:{labels:A.age.map(a=>a.k),datasets:[{label:'2025',data:A.age.map(a=>a.imp),backgroundColor:css('--cy')},{label:'2024',data:A.age.map(a=>a.py_imp),backgroundColor:css('--py')}]},options:barOpts('num')});
+ mk('g-gen',{type:'bar',data:{labels:A.gender.map(a=>a.k),datasets:[{label:'2025',data:A.gender.map(a=>a.imp),backgroundColor:css('--cy')},{label:'2024',data:A.gender.map(a=>a.py_imp),backgroundColor:css('--py')}]},options:barOpts('num',true)});};
+
+let paidView='scen';
+RENDER.paid=()=>{$('#t-paid').innerHTML=rail()+`<div class="ctl" id="paid-sw"><span class="gl">Section</span><button class="chip ${paidView==='scen'?'on':''}" data-v="scen">Paid scenarios</button><button class="chip ${paidView==='perf'?'on':''}" data-v="perf">Google Ads performance</button></div><div id="paid-body"></div>`;
+ const go=()=>{Object.keys(CH).filter(k=>/^(sc|c-g|g-)/.test(k)).forEach(k=>{CH[k].destroy();delete CH[k];});paidView==='scen'?renderScenarios($('#paid-body')):renderPaidPerf();};
+ $('#paid-sw').onclick=e=>{const v=e.target.dataset.v;if(!v)return;paidView=v;$('#paid-sw').querySelectorAll('.chip').forEach(c=>c.classList.toggle('on',c.dataset.v===v));go();};go();};
+/*__SCENARIOS__*/
+/* ---- Organic search ---- */
+RENDER.seo=()=>{const G=PAY.gsc,ck=sum(D,'sc_clk'),im=sum(D,'sc_imp');
+ const brand=G.queries.filter(q=>/livestock|deadstock|live stock|dead stock/.test(q.k)).reduce((a,q)=>a+q.clk,0),topc=G.queries.reduce((a,q)=>a+q.clk,0);
+ $('#t-seo').innerHTML=rail()+`<div class="sec"><div class="sech"><h2>Google Search Console · web</h2><span class="sub">deadstock.ca, 1 Oct – 31 Dec 2025 (no prior year in export)</span></div>
+ <div class="kpis">${kpi('Clicks',n0(ck),'')}${kpi('Impressions',n0(im),'')}${kpi('CTR',pc(ck/im),'')}${kpi('Canada share of clicks',pc(G.countries[0].clk/ck,1),'')}
+ ${kpi('Brand share, top 60 queries',pc(brand/topc,0),'<span class="d">livestock / deadstock terms</span>')}${kpi('Mobile share of clicks',pc(G.devices[0].clk/ck,1),'')}</div></div>
+ <div class="two"><div class="sec"><div class="sech"><h2>Daily organic clicks</h2></div><div class="panel"><div class="chartbox sm"><canvas id="s-c"></canvas></div></div></div>
+ <div class="sec"><div class="sech"><h2>Daily impressions</h2></div><div class="panel"><div class="chartbox sm"><canvas id="s-i"></canvas></div></div></div></div>
+ <div class="note">Organic search is mostly navigational. "livestock" alone drove <b>${n0(G.queries[0].clk)}</b> clicks, and city modifiers (Toronto, Vancouver, Montreal, Winnipeg) rank at position ~1. Product-level wins came from a small number of hype SKUs (adidas BW Army, Arc'teryx Bird Head toque, Jordan 4). Merchant listings earn a <b>${pc(G.appearance.find(a=>a.k==='Merchant listings').ctr,1)}</b> CTR against ${pc(G.appearance.find(a=>a.k==='Product snippets').ctr,1)} for product snippets.</div>
+ <div class="two"><div class="sec"><div class="sech"><h2>Top queries</h2></div><div id="s-q"></div></div><div class="sec"><div class="sech"><h2>Top pages</h2></div><div id="s-p"></div></div></div>
+ <div class="three"><div class="sec"><div class="sech"><h2>Countries</h2></div><div id="s-co"></div></div><div class="sec"><div class="sech"><h2>Devices</h2></div><div id="s-d"></div></div><div class="sec"><div class="sech"><h2>Search appearance</h2></div><div id="s-a"></div></div></div>`;
+ mk('s-c',{type:'line',data:{labels:LABELS,datasets:[cyDs('Clicks',D.map(r=>r.sc_clk))]},options:lineOpts('num',{plugins:{markers:{days:evMarkers()}}})});
+ mk('s-i',{type:'line',data:{labels:LABELS,datasets:[cyDs('Impressions',D.map(r=>r.sc_imp))]},options:lineOpts('num')});
+ const gcols=(t)=>[{k:'k',t,l:1,cls:'strong',f:r=>esc(String(r.k).replace(/^https?:\/\/(www\.)?deadstock\.ca/,'')||'/')},{k:'clk',t:'Clicks',f:r=>n0(r.clk)},{k:'imp',t:'Impr.',f:r=>n0(r.imp)},{k:'ctr',t:'CTR',f:r=>pc(r.ctr,1)},{k:'pos',t:'Pos.',f:r=>ok(r.pos)?r.pos.toFixed(1):'—'}];
+ table($('#s-q'),gcols('Query'),G.queries,{h:460});table($('#s-p'),gcols('Page'),G.pages,{h:460});
+ table($('#s-co'),gcols('Country'),G.countries,{h:380});table($('#s-d'),gcols('Device'),G.devices);table($('#s-a'),gcols('Appearance'),G.appearance);};
+
+/* ---- Notes ---- */
+RENDER.notes=()=>{$('#t-notes').innerHTML=`<div class="sec"><div class="sech"><h2>Sources</h2></div><div class="ins">
+ <div><h4>Shopify · Total sales breakdown</h4><p>Daily net sales, discounts, sales reversals (returns), sessions, conversion rate and AOV, 1 Oct – 31 Dec 2025 against the same dates in 2024. Gross sales = net + discounts + reversals. <b>Orders are estimated</b> as sessions × conversion rate, because the export has no order count.</p></div>
+ <div><h4>Google Ads · Overview cards</h4><p>Daily cost, clicks and conversions plus campaign, device, keyword, search term, demographic and day×hour cards. Google aligns the comparison on weekday (1 Oct 2025 ↔ 2 Oct 2024). Conversions are Google-attributed and not deduplicated against Shopify.</p></div>
+ <div><h4>Google Search Console</h4><p>Web search performance for deadstock.ca: daily clicks, impressions, CTR and position, plus queries, pages, countries, devices and search appearance. The export has no prior-year comparison.</p></div>
+ <div><h4>GA4</h4><p>User acquisition by first-user channel (users, key events, revenue, transactions) and pages and screens by title (views, users, key events). GA4 revenue (${kk(PAY.ga_total.rev)}) is gross and differs from Shopify net sales by design.</p></div>
+ <div><h4>Release calendar</h4><p>${PAY.launches.length} launches transcribed from the launch calendar screenshots. Each launch is matched to its GA4 product page by name, and ${PAY.launches.filter(l=>l.match).length} matched. Lines truncated in the screenshot (e.g. "Show all (4)" on 10 Oct) may be incomplete.</p></div>
+ <div><h4>Klaviyo campaigns</h4><p>${(PAY.comms||[]).length} email campaigns sent 1 Oct – 31 Dec 2025: recipients, open and click rates, active on site, unsubscribes. The export has no revenue column. Sale dates on the timeline (early Black Friday 13 Nov, 70% off 25 Nov, last chance 2 Dec, Boxing Week 24 Dec) come from these sends.</p></div>
+ <div><h4>Shopify channel performance</h4><p>Sessions, sales, orders, conversion rate, AOV and new vs returning orders by referring platform, for the whole quarter (last click). Used for the Shopify channel section and to calibrate the daily channel estimates.</p></div>
+ <div><h4>Brand performance report</h4><p>The YouTube/Display brand performance export contained no data (all nulls), so it is not charted.</p></div></div></div>
+ <div class="sec"><div class="sech"><h2>Caveats</h2></div>
+ <div class="note">Trading periods are analytical windows. Sale moments on the timeline are inferred from Klaviyo send dates and subject lines, not from a promo calendar. Edit <code>periods</code> and <code>events</code> in <code>build/build_data.py</code> to change them. The same-date YoY puts Black Friday 2025 (28 Nov) against US Thanksgiving 2024. Use the "same weekday" comparison on the Performance tab, or the BFCM tab, for event-aligned reads.</div></div>`;};
+
+/* ---------- boot ---------- */
+const h0=(location.hash||'').slice(1);show(TABS.some(t=>t[0]===h0)?h0:'ov');
+</script>
+</body></html>

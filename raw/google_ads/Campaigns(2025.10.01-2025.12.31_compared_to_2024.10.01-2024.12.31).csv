@@ -1,0 +1,8 @@
+Campaign Name,Campaign Group Name,Campaign Status,Cost,Cost (Comparison),Conversions,Conversions (Comparison),Cost / conv.,Cost / conv. (Comparison)
+,Shopping Group 2025_9_23 14_8,,"CA$20,013.32",CA$0.00,"1,277.08",0.00,CA$15.67,CA$0.00
+shop_catchall_footwear,,Paused,"CA$20,013.32",CA$0.00,"1,277.08",0.00,CA$15.67,CA$0.00
+,Shopping Group 2024_1_17 8_56,,"CA$11,856.08","CA$12,768.33","2,017.37","2,106.47",CA$5.88,CA$6.06
+shop-inline,,Enabled,"CA$11,856.08","CA$12,768.33","2,017.37","2,106.47",CA$5.88,CA$6.06
+gsn-branded_search,,Enabled,"CA$1,622.85",CA$551.18,669.67,455.45,CA$2.42,CA$1.21
+Target ROAS experiment - OMEGA All Product / catch-all,,Enabled,CA$0.00,CA$0.00,0.00,0.00,CA$0.00,CA$0.00
+gsn_apparel,,Enabled,CA$0.00,CA$0.00,0.00,0.00,CA$0.00,CA$0.00
