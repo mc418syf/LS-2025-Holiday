@@ -294,7 +294,8 @@ if os.path.exists(cp):
         if not d or d not in DI or not ch:
             continue
         chan_daily.setdefault(d, []).append(dict(ch=ch, rev=num(pick(r, 'total revenue', 'purchase revenue', 'revenue')),
-                                                 sess=num(pick(r, 'sessions')), tx=num(pick(r, 'transactions', 'purchases', 'key events'))))
+                                                 sess=num(pick(r, 'sessions')), tx=num(pick(r, 'transactions', 'purchases')),
+                                                 ke=num(pick(r, 'key events')), eng=num(pick(r, 'engaged sessions'))))
 
 # ---------------- Calendar markers ----------------
 events = [
