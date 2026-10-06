@@ -428,8 +428,21 @@ if os.path.exists(fp_path):
 # Markdown = sold below the regular price: compare-at price > selling price, or an explicit markdown/on-sale flag.
 psales = None
 ps_path = os.path.join(RAW, 'product_sales_daily.csv')
-if os.path.exists(ps_path):
+px_path = os.path.join(RAW, 'product_performance.xlsx')
+rows_ps = None
+if os.path.exists(px_path):
+    import datetime as _dt2
+    _ws = openpyxl.load_workbook(px_path, read_only=True, data_only=True).worksheets[0]
+    _it = _ws.iter_rows(values_only=True)
+    _h = [str(x or '') for x in next(_it)]
+    rows_ps = []
+    for _r in _it:
+        if not isinstance(_r[0], _dt2.datetime):
+            continue  # skips the Grand Total row
+        rows_ps.append({k: (v.date().isoformat() if isinstance(v, _dt2.datetime) else v) for k, v in zip(_h, _r) if k != 'Product Tags'})
+elif os.path.exists(ps_path):
     rows_ps = read_csv(ps_path)
+if rows_ps is not None:
     by_day, by_b, by_t, by_p = {}, {}, {}, {}
     can_split = False
     for r in rows_ps:
@@ -440,9 +453,9 @@ if os.path.exists(ps_path):
         qty = num(pick(r, 'net quantity', 'quantity', 'net items sold', 'units', 'quantity ordered')) or 0
         price = num(pick(r, 'product variant price', 'price', 'selling price', 'unit price'))
         cmp_ = num(pick(r, 'product variant compare at price', 'compare at price', 'compare_at_price', 'regular price', 'original price'))
-        flag = (pick(r, 'markdown', 'on sale', 'is_markdown', 'sale flag') or '').strip().lower()
+        flag = str(pick(r, 'status', 'markdown', 'on sale', 'is_markdown', 'sale flag') or '').strip().lower()
         if flag:
-            mkd = flag in ('1', 'y', 'yes', 'true', 'markdown', 'mkd', 'sale')
+            mkd = flag in ('1', 'y', 'yes', 'true', 'markdown', 'markdowns', 'mkd', 'sale')
             can_split = True
         elif cmp_ is not None and price is not None:
             mkd = cmp_ > price + 0.005
@@ -453,7 +466,11 @@ if os.path.exists(ps_path):
         ptype = (pick(r, 'product type', 'category', 'type') or 'Unknown').strip()
         title = (pick(r, 'product title', 'product', 'product name') or '').strip()
         disc = num(pick(r, 'discounts')) or 0
-        day = by_day.setdefault(d, dict(fp=0, mkd=0, fpu=0, mkdu=0))
+        day = by_day.setdefault(d, dict(fp=0, mkd=0, fpu=0, mkdu=0, oids=set(), units=0))
+        oid = pick(r, 'order id', 'order name', 'order')
+        if oid and qty > 0:
+            day['oids'].add(str(oid))
+        day['units'] += qty
         if mkd is not None:
             day['mkd' if mkd else 'fp'] += net
             day['mkdu' if mkd else 'fpu'] += qty
@@ -465,6 +482,10 @@ if os.path.exists(ps_path):
     if can_split and not os.path.exists(fp_path):
         for d, v in by_day.items():
             DI[d].update(fp=round(v['fp'], 2), mkd=round(v['mkd'], 2), fpu=v['fpu'], mkdu=v['mkdu'])
+    for d, v in by_day.items():
+        if v['oids']:
+            DI[d]['ord_act'] = len(v['oids'])
+        DI[d]['units'] = v['units']
     rnd = lambda xs, n: [dict(o, net=round(o['net'], 2), mkd=round(o['mkd'], 2)) for o in sorted(xs, key=lambda o: -o['net'])[:n]]
     psales = dict(split=can_split, rows=len(rows_ps), brands=rnd(by_b.values(), 60), types=rnd(by_t.values(), 40), products=rnd(by_p.values(), 500))
 
